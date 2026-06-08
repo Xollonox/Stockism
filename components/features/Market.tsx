@@ -39,16 +39,16 @@ export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSe
   const tradingEnabled = settings.tradingEnabled;
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
-       {/* Premium Header */}
-       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-brand/10 to-transparent border-l-4 border-brand p-8 shadow-2xl group">
+    <div className="space-y-8">
+       {/* Premium Header with Animated Elements */}
+       <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-brand/10 to-transparent border-l-4 border-brand p-8 shadow-2xl group border-gradient">
            <div className="relative z-10 flex flex-col md:flex-row justify-between items-end gap-6">
-               <div>
+               <div className="animate-fade-in-up">
                    <h2 className="text-5xl font-heading text-white italic tracking-tighter drop-shadow-lg">FIGHTER <span className="text-brand text-transparent bg-clip-text bg-gradient-to-r from-brand to-pink-500">EXCHANGE</span></h2>
-                   <p className="text-xs text-brand/80 font-mono font-bold tracking-[0.3em] uppercase mt-2 pl-1">Tactical Asset Board • Underground Index</p>
+                   <p className="text-xs text-brand/80 font-mono font-bold tracking-[0.3em] uppercase mt-2 pl-1 animate-slide-in-right">Tactical Asset Board • Underground Index</p>
                </div>
-               <div className="flex items-center gap-3">
-                   <div className="px-3 py-1 bg-brand/20 border border-brand/30 text-brand text-[10px] font-bold uppercase tracking-widest rounded-sm backdrop-blur-md shadow-lg">
+               <div className="flex items-center gap-3 animate-fade-in-up">
+                   <div className="px-3 py-1 bg-brand/20 border border-brand/30 text-brand text-[10px] font-bold uppercase tracking-widest rounded-sm backdrop-blur-md shadow-lg animate-glow-pulse">
                        Active Protocol
                    </div>
                    <div className="px-3 py-1 bg-white/5 border border-white/10 text-white/50 text-[10px] font-bold uppercase tracking-widest rounded-sm backdrop-blur-md">
@@ -58,12 +58,16 @@ export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSe
            </div>
            
            {/* Decorative Elements */}
-           <div className="absolute -right-10 -bottom-12 text-[12rem] text-brand/5 select-none font-heading italic pointer-events-none group-hover:scale-105 transition-transform duration-1000 ease-out">⚔</div>
+           <div className="absolute -right-10 -bottom-12 text-[12rem] text-brand/5 select-none font-heading italic pointer-events-none group-hover:scale-110 transition-transform duration-1000 ease-out animate-float">⚔</div>
            <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-brand/5 to-transparent pointer-events-none" />
            <div className="absolute inset-0 bg-[radial-gradient(var(--color-line)_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none"></div>
+           
+           {/* Premium Accent Line Animation */}
+           <div className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-brand via-brand/50 to-transparent animate-scanline" />
        </div>
 
-       <div className="flex flex-col md:flex-row gap-0 glass-panel border border-line p-0 overflow-hidden sticky top-4 z-30 shadow-xl rounded-sm">
+       {/* Filter Bar with Glassmorphism */}
+       <div className="flex flex-col md:flex-row gap-0 glass-panel border border-line p-0 overflow-hidden sticky top-4 z-30 shadow-xl rounded-sm animate-fade-in-up">
           <Input 
             placeholder="SEARCH TARGET NODES..." 
             value={search} 
@@ -89,14 +93,13 @@ export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSe
           </Select>
        </div>
 
-      <div 
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 400px' }}
-      >
-        {filteredMarket.map(char => (
+      {/* Card Grid with Staggered Animations */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {filteredMarket.map((char, i) => (
           <MarketCard 
             key={char.id} 
-            char={char} 
+            char={char}
+            index={i}
             onTrade={onTrade} 
             isFrozen={frozenIds.includes(char.id)}
             tradingEnabled={tradingEnabled}

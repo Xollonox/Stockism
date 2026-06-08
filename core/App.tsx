@@ -500,6 +500,34 @@ export default function App() {
 
 
 
+            {/* Premium Animated Data Ticker */}
+            <div className="glass-panel overflow-hidden rounded-md border border-line group relative">
+               <div className="laser-sweep" />
+               <div className="flex items-center h-10 bg-black/40">
+                  <div className="flex items-center gap-2 px-5 h-full border-r border-line bg-brand/10 shrink-0">
+                    <div className="w-2 h-2 bg-brand rounded-full animate-pulse shadow-[0_0_8px_var(--color-brand)]" />
+                    <span className="text-[9px] font-heading font-black text-brand uppercase tracking-widest">LIVE</span>
+                  </div>
+                  <div className="ticker-wrap flex-1 h-full flex items-center">
+                    <div className="ticker-content flex items-center gap-16 px-5">
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ MARKET CAP: <span className="text-white font-bold">$12.4M</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ 24H VOL: <span className="text-good font-bold">$847K ▲ 12.4%</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ ACTIVE NODES: <span className="text-white font-bold">{market.length}</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ TRANSACTIONS: <span className="text-white font-bold">{trades.length}</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ SEASON: <span className="text-brand font-bold">{settings.season}</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ TRADING: <span className={settings.tradingEnabled ? 'text-good font-bold' : 'text-bad font-bold'}>{settings.tradingEnabled ? 'OPEN' : 'CLOSED'}</span></span>
+                      {/* Duplicate for seamless scroll */}
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ MARKET CAP: <span className="text-white font-bold">$12.4M</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ 24H VOL: <span className="text-good font-bold">$847K ▲ 12.4%</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ ACTIVE NODES: <span className="text-white font-bold">{market.length}</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ TRANSACTIONS: <span className="text-white font-bold">{trades.length}</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ SEASON: <span className="text-brand font-bold">{settings.season}</span></span>
+                      <span className="text-[10px] font-mono text-muted/60 whitespace-nowrap">Φ TRADING: <span className={settings.tradingEnabled ? 'text-good font-bold' : 'text-bad font-bold'}>{settings.tradingEnabled ? 'OPEN' : 'CLOSED'}</span></span>
+                    </div>
+                  </div>
+               </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up anim-delay-2 mb-8">
                <div className="glass-panel h-[400px] flex flex-col rounded-md relative overflow-hidden group">
                   <div className="laser-sweep" />

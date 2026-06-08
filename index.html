@@ -40,6 +40,19 @@
               'fade-in-up': 'fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
               'shake': 'shake 120ms cubic-bezier(0.4, 0, 0.2, 1) both',
               'scanline': 'scanline 2s linear infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'pulse-ring': 'pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite',
+              'glow-pulse': 'glowPulse 3s ease-in-out infinite',
+              'data-scroll': 'dataScroll 20s linear infinite',
+              'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'slide-in-right': 'slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'zoom-in': 'zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'border-pulse': 'borderPulse 2s ease-in-out infinite',
+              'sparkle': 'sparkle 1.5s ease-in-out infinite',
+              'ripple': 'ripple 0.6s linear',
+              'particle-float': 'particleFloat 3s ease-in-out infinite',
+              'price-flash': 'priceFlash 0.3s ease-out',
+              'tilt-glow': 'tiltGlow 4s ease-in-out infinite',
             },
             keyframes: {
               shimmer: {
@@ -60,7 +73,61 @@
               scanline: {
                 '0%': { transform: 'translateX(-100%)' },
                 '100%': { transform: 'translateX(100%)' }
-              }
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0px)' },
+                '50%': { transform: 'translateY(-8px)' },
+              },
+              pulseRing: {
+                '0%': { transform: 'scale(1)', opacity: '1' },
+                '100%': { transform: 'scale(2.5)', opacity: '0' },
+              },
+              glowPulse: {
+                '0%, 100%': { boxShadow: '0 0 8px rgba(225,29,72,0.3)' },
+                '50%': { boxShadow: '0 0 25px rgba(225,29,72,0.6)' },
+              },
+              dataScroll: {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px) scale(0.98)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+              },
+              slideInRight: {
+                '0%': { opacity: '0', transform: 'translateX(20px)' },
+                '100%': { opacity: '1', transform: 'translateX(0)' },
+              },
+              zoomIn: {
+                '0%': { opacity: '0', transform: 'scale(0.95)' },
+                '100%': { opacity: '1', transform: 'scale(1)' },
+              },
+              borderPulse: {
+                '0%, 100%': { borderColor: 'rgba(225,29,72,0.2)' },
+                '50%': { borderColor: 'rgba(225,29,72,0.6)' },
+              },
+              sparkle: {
+                '0%, 100%': { opacity: '0', transform: 'scale(0)' },
+                '50%': { opacity: '1', transform: 'scale(1)' },
+              },
+              ripple: {
+                '0%': { transform: 'scale(0)', opacity: '0.5' },
+                '100%': { transform: 'scale(4)', opacity: '0' },
+              },
+              particleFloat: {
+                '0%': { transform: 'translateY(0) translateX(0)', opacity: '0' },
+                '20%': { opacity: '0.6' },
+                '80%': { opacity: '0.6' },
+                '100%': { transform: 'translateY(-60px) translateX(20px)', opacity: '0' },
+              },
+              priceFlash: {
+                '0%': { transform: 'scale(1.15)', color: '#10B981' },
+                '100%': { transform: 'scale(1)', color: 'inherit' },
+              },
+              tiltGlow: {
+                '0%, 100%': { backgroundPosition: '0% 50%' },
+                '50%': { backgroundPosition: '100% 50%' },
+              },
             }
           }
         }
@@ -275,6 +342,166 @@
         .animate-shake, .laser-sweep, .cyber-glitch-hover:hover {
           animation: none !important;
         }
+      }
+
+      /* ═══════════════════════════════════════════════
+         PREMIUM EFFECTS — 3D TILT, PARTICLES, GLASS 2.0
+         ═══════════════════════════════════════════════ */
+
+      /* === 3D Card Tilt Container === */
+      .card-3d {
+        perspective: 1200px;
+        transform-style: preserve-3d;
+      }
+      .card-3d-inner {
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .card-3d:hover .card-3d-inner {
+        transform: rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg));
+      }
+
+      /* === Glossy Reflection Overlay === */
+      .glass-gloss::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255,255,255,0.08) 0%,
+          transparent 40%,
+          transparent 60%,
+          rgba(255,255,255,0.03) 100%
+        );
+        pointer-events: none;
+        z-index: 5;
+      }
+
+      /* === Animated Border Gradient === */
+      .border-gradient {
+        position: relative;
+      }
+      .border-gradient::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        background: linear-gradient(
+          135deg,
+          var(--color-brand), 
+          var(--color-brand2), 
+          var(--color-brand)
+        );
+        background-size: 200% 200%;
+        border-radius: inherit;
+        z-index: -1;
+        animation: tiltGlow 4s ease-in-out infinite;
+        opacity: 0.4;
+        transition: opacity 0.3s ease;
+      }
+      .border-gradient:hover::before {
+        opacity: 0.8;
+      }
+
+      /* === Price Change Animation === */
+      .price-up {
+        animation: priceFlash 0.4s ease-out;
+        color: #10B981 !important;
+      }
+      .price-down {
+        animation: priceFlash 0.4s ease-out;
+        color: #EF4444 !important;
+      }
+
+      /* === Particle Sparkle Container === */
+      .particle-container {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 20;
+      }
+      .particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: var(--color-brand);
+        border-radius: 50%;
+        opacity: 0;
+        animation: sparkle var(--duration, 1.5s) ease-in-out infinite;
+        animation-delay: var(--delay, 0s);
+      }
+
+      /* === Glowing Text Effect === */
+      .text-glow {
+        text-shadow: 0 0 10px var(--color-brand), 0 0 20px var(--color-brand), 0 0 40px var(--color-brand);
+      }
+      .text-glow-good {
+        text-shadow: 0 0 10px var(--color-good), 0 0 20px var(--color-good);
+      }
+
+      /* === Smooth Page Transitions === */
+      .view-enter {
+        opacity: 0;
+        transform: translateY(12px) scale(0.99);
+      }
+      .view-enter-active {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* === Premium Data Ticker === */
+      .ticker-wrap {
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+      }
+      .ticker-content {
+        display: inline-flex;
+        animation: dataScroll 30s linear infinite;
+      }
+      .ticker-content:hover {
+        animation-play-state: paused;
+      }
+
+      /* === Rarity-specific Border Glow Animations === */
+      .rarity-mythic { box-shadow: 0 0 15px rgba(239,68,68,0.2), inset 0 0 15px rgba(239,68,68,0.05); }
+      .rarity-legendary { box-shadow: 0 0 12px rgba(245,158,11,0.15), inset 0 0 12px rgba(245,158,11,0.03); }
+      .rarity-epic { box-shadow: 0 0 10px rgba(192,38,211,0.12); }
+      .rarity-rare { box-shadow: 0 0 8px rgba(59,130,246,0.08); }
+
+      /* === Staggered Animation Delays === */
+      .stagger-1 { animation-delay: 0.05s !important; }
+      .stagger-2 { animation-delay: 0.1s !important; }
+      .stagger-3 { animation-delay: 0.15s !important; }
+      .stagger-4 { animation-delay: 0.2s !important; }
+      .stagger-5 { animation-delay: 0.25s !important; }
+      .stagger-6 { animation-delay: 0.3s !important; }
+      .stagger-7 { animation-delay: 0.35s !important; }
+      .stagger-8 { animation-delay: 0.4s !important; }
+
+      /* === Grid Background for Premium Sections === */
+      .bg-grid-premium {
+        background-image: 
+          radial-gradient(circle at 1px 1px, var(--color-line) 1px, transparent 0);
+        background-size: 24px 24px;
+      }
+
+      /* === Stat Counter Glow === */
+      .stat-glow {
+        position: relative;
+      }
+      .stat-glow::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 80px;
+        height: 80px;
+        background: radial-gradient(circle, rgba(225,29,72,0.08), transparent 70%);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
       }
     </style>
     <script type="importmap">
