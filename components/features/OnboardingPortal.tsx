@@ -60,7 +60,6 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
   const [loading, setLoading] = useState(false);
   const [typedTitle, setTypedTitle] = useState('');
   const [showContent, setShowContent] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [logs, setLogs] = useState<LogEntry[]>([
@@ -71,18 +70,27 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
   ]);
 
   const logContainerRef = useRef<HTMLDivElement>(null);
+  const tiltRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
-  // 3D tilt on mouse move
+  // 3D tilt on mouse move — direct DOM, no React re-renders
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setMousePos({ x: x * 6, y: y * -6 });
+    if (!containerRef.current || !tiltRef.current) return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const rect = containerRef.current!.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 6;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -6;
+      tiltRef.current!.style.transform = `rotateX(${y}deg) rotateY(${x}deg)`;
+    });
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    setMousePos({ x: 0, y: 0 });
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (tiltRef.current) {
+      tiltRef.current.style.transform = 'rotateX(0deg) rotateY(0deg)';
+      tiltRef.current.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+    }
   }, []);
 
   // Typewriter effect on slide change
@@ -125,7 +133,7 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
 
   // 3D floating particles
   const particles = useMemo(() => {
-    return Array.from({ length: 24 }).map(() => ({
+    return Array.from({ length: 10 }).map(() => ({
       left: Math.random() * 100,
       top: Math.random() * 100,
       delay: Math.random() * 8,
@@ -138,7 +146,7 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
 
   // Floating geometric shapes
   const shapes = useMemo(() => {
-    return Array.from({ length: 6 }).map(() => ({
+    return Array.from({ length: 3 }).map(() => ({
       left: Math.random() * 100,
       top: Math.random() * 100,
       size: 30 + Math.random() * 80,
@@ -238,10 +246,11 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
         }}
       >
         <div
+          ref={tiltRef}
           className="card-3d-inner w-full glass-panel rounded-2xl overflow-hidden border border-white/10 z-10 flex flex-col lg:flex-row relative"
           style={{
-            transform: `rotateX(${mousePos.y}deg) rotateY(${mousePos.x}deg)`,
-            transition: mousePos.x === 0 && mousePos.y === 0 ? 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+            transition: 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
+            willChange: 'transform',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
             background: 'linear-gradient(135deg, rgba(20,20,23,0.7), rgba(28,28,33,0.3))',
