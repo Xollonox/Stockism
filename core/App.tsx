@@ -37,6 +37,12 @@ import { DailyMissions } from '../components/features/DailyMissions';
 import { useSound } from '../hooks/useSound';
 import { ACHIEVEMENTS, checkNewAchievements } from '../utils/achievements';
 import { DAILY_MISSIONS, getTodayStr, checkMissionProgress } from '../utils/missions';
+import { priceEngine } from '../utils/priceEngine';
+import { checkLoginStreak, MYSTERY_BOXES } from '../utils/gamification';
+import { MobileNav } from '../components/features/MobileNav';
+import { MysteryBoxShop } from '../components/features/MysteryBoxShop';
+import { AdminTools } from '../components/features/AdminTools';
+import { usePullToRefresh, haptic } from '../hooks/usePullToRefresh';
 import { createConfetti } from '../utils/confetti';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { SettingsPanel } from '../components/features/SettingsPanel';
@@ -69,6 +75,10 @@ function AppContent() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [showMysteryBox, setShowMysteryBox] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [streakBonus, setStreakBonus] = useState(0);
+  const [showStreak, setShowStreak] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('stockism_sound') !== 'false');
   const [animationsEnabled, setAnimationsEnabled] = useState(() => localStorage.getItem('stockism_animations') !== 'false');
   const [netWorthHistory, setNetWorthHistory] = useState<{ time: number; netWorth: number }[]>([]);
@@ -246,6 +256,17 @@ function AppContent() {
             const pData = privSnap.data() as UserPrivateData;
             if (pData.isBanned) setIsBanned(true);
             setUserRole(pData.role || null);
+            // Login streak
+            try {
+              const result = await checkLoginStreak(u.uid);
+              if (result.isNew && result.bonus > 0) {
+                setStreak(result.streak);
+                setStreakBonus(result.bonus);
+                setShowStreak(true);
+                sounds.success();
+                addToast({ message: `🔥 Day ${result.streak} streak! +Φ ${result.bonus.toLocaleString()} bonus`, type: 'success' });
+              }
+            } catch {}
           }
           const pubSnap = await getDoc(pubRef);
           if (!pubSnap.exists()) {
@@ -291,7 +312,29 @@ function AppContent() {
       const chars: Character[] = [];
       snap.forEach(d => { const data = d.data(); chars.push({ id: d.id, ...data } as Character); });
       setMarket(chars);
+      // Init price engine
+      priceEngine.init(chars.map(c => ({ id: c.id, price: c.price, volatility: c.volatility })));
+      priceEngine.start();
     }, (err) => console.error("Market stream error:", err));
+
+    // Price engine subscription — update prices in real-time
+    const unsubPrice = priceEngine.subscribe((ticks) => {
+      setMarket(prev => prev.map(c => {
+        const tick = ticks.find(t => t.charId === c.id);
+        if (tick) {
+          // Update Firestore periodically (throttled)
+          const updatedPrice = tick.newPrice;
+          return { ...c, price: updatedPrice, lastUpdated: Date.now() };
+        }
+        return c;
+      }));
+      // Alert on big moves
+      ticks.forEach(t => {
+        if (Math.abs(t.changePct) > 8) {
+          addToast({ message: `⚡ ${t.charId.slice(0, 6)}... ${t.changePct > 0 ? '📈' : '📉'} ${Math.abs(t.changePct).toFixed(1)}%`, type: 'info' });
+        }
+      });
+    });
     const unsubTrades = onSnapshot(query(collection(db, 'trades'), orderBy('createdAt', 'desc'), limit(50)), (snap) => {
       const t: Trade[] = [];
       snap.forEach(d => t.push(d.data() as Trade));
@@ -307,8 +350,22 @@ function AppContent() {
       snap.forEach(d => n.push({ id: d.id, ...d.data() } as Announcement));
       setNews(n);
     }, (err) => console.error("News stream error:", err));
-    return () => { unsubGame(); unsubMarket(); unsubTrades(); unsubLb(); unsubNews(); };
+    return () => { unsubGame(); unsubMarket(); unsubTrades(); unsubLb(); unsubNews(); unsubPrice(); priceEngine.stop(); };
   }, []);
+
+  // News price impact — apply active impacts to character prices
+  useEffect(() => {
+    const activeImpacts = news.filter(n => n.priceImpact && n.expiresAt && n.impactedCharId);
+    if (activeImpacts.length === 0) return;
+    setMarket(prev => prev.map(c => {
+      const impact = activeImpacts.find(n => n.impactedCharId === c.id);
+      if (impact) {
+        const multiplier = 1 + (impact.priceImpact || 0) / 100;
+        return { ...c, price: Math.round((c.price || 0) * multiplier) };
+      }
+      return c;
+    }));
+  }, [news]);
 
   useEffect(() => {
     if (!user) return;
@@ -852,6 +909,29 @@ function AppContent() {
                   </div>
                 </div>
 
+                {/* Streak Banner */}
+                {streak > 0 && (
+                  <div className="premium-card p-4 rounded-lg relative overflow-hidden group">
+                    <div className="laser-sweep" />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl animate-float">🔥</span>
+                        <div>
+                          <div className="text-xs font-heading font-black text-white uppercase tracking-wider">Day {streak} Login Streak</div>
+                          <div className="text-[9px] font-mono text-muted/60">Keep logging in for bigger bonuses</div>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => setShowMysteryBox(true)}
+                        className="!py-2 !px-4 text-[9px] tracking-widest font-heading font-black"
+                        variant="secondary"
+                      >
+                        🎁 Mystery Boxes
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="glass-panel p-6 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
                   <div>
                     <h2 className="text-2xl font-heading text-white">ASSET ALLOCATION</h2>
@@ -959,7 +1039,12 @@ function AppContent() {
           </div>
         )}
 
-        {view === 'admin' && isAdmin && <AdminPanel settings={settings} market={market} isMainAdmin={user?.email === ADMIN_EMAIL} />}
+        {view === 'admin' && isAdmin && (
+          <div className="space-y-8 animate-fade-in-up">
+            <AdminPanel settings={settings} market={market} isMainAdmin={user?.email === ADMIN_EMAIL} />
+            <AdminTools market={market} />
+          </div>
+        )}
 
         {view === 'popularity' && (
           <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
@@ -1038,6 +1123,28 @@ function AppContent() {
           />
         )}
       </Layout>
+
+      {/* Mobile Bottom Nav */}
+      <MobileNav activeView={view} setView={setView} isAdmin={isAdmin} isGuest={!user} />
+
+      {/* Mystery Box Modal */}
+      {showMysteryBox && user && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={(e) => e.target === e.currentTarget && setShowMysteryBox(false)}>
+          <div className="w-full max-w-2xl glass-panel border border-line rounded-lg p-6 animate-zoom-in max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-4 bg-brand rounded-full animate-pulse" />
+                <h2 className="text-lg font-heading text-white italic tracking-tighter uppercase">🎁 Mystery Boxes</h2>
+              </div>
+              <button onClick={() => setShowMysteryBox(false)} className="text-muted hover:text-white text-sm font-mono">✕</button>
+            </div>
+            <div className="text-[10px] font-mono text-muted/60 mb-6">
+              Your Balance: <span className="text-white font-bold">Φ {formatMoney(cash)}</span>
+            </div>
+            <MysteryBoxShop uid={user.uid} cash={cash} onRefresh={() => {}} />
+          </div>
+        </div>
+      )}
 
       {showSettings && (
         <SettingsPanel

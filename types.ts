@@ -20,6 +20,9 @@ export interface UserPrivateData {
   role?: 'admin' | 'worker';
   bonusClaimed?: boolean;
   tutorialComplete?: boolean;
+  streak?: number;
+  lastLoginDate?: string;
+  mysteryBoxes?: number;
 }
 
 export interface Character {
@@ -39,6 +42,9 @@ export interface Character {
   prevStrengthRank?: number;
   allTimeHigh?: number;
   holdersCount?: number;
+  volatility?: number; // ±% per tick
+  priceHistory?: { time: number; price: number }[];
+  lastUpdated?: number;
 }
 
 export interface PricePoint {
@@ -103,6 +109,7 @@ export interface Announcement {
   createdBy: string;
   priceImpact?: number;
   expiresAt?: Timestamp;
+  impactedCharId?: string;
 }
 
 // Achievement System
@@ -154,4 +161,18 @@ export interface Toast {
 export interface PriceHistory {
   charId: string;
   prices: { time: number; price: number }[];
+}
+
+export interface MysteryBox {
+  id: string;
+  cost: number;
+  rewards: string[];
+  icon: string;
+}
+
+export interface LoginStreak {
+  current: number;
+  max: number;
+  lastDate: string;
+  claimedToday: boolean;
 }
