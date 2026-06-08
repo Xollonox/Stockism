@@ -318,6 +318,11 @@ function AppContent() {
       // Init price engine
       priceEngine.init(chars.map(c => ({ id: c.id, price: c.price, volatility: c.volatility })));
       priceEngine.start();
+      // Start AI market agent when market data arrives
+      if (aiAgentActive && chars.length > 0) {
+        startMarketAgent(chars);
+        setAiAgentRunning(true);
+      }
     }, (err) => console.error("Market stream error:", err));
 
     // Price engine subscription — update prices in real-time
@@ -325,7 +330,6 @@ function AppContent() {
       setMarket(prev => prev.map(c => {
         const tick = ticks.find(t => t.charId === c.id);
         if (tick) {
-          // Update Firestore periodically (throttled)
           const updatedPrice = tick.newPrice;
           return { ...c, price: updatedPrice, lastUpdated: Date.now() };
         }
@@ -338,11 +342,6 @@ function AppContent() {
         }
       });
     });
-    // Start AI market agent when market is ready
-    if (aiAgentActive && chars.length > 0) {
-      startMarketAgent(chars);
-      setAiAgentRunning(true);
-    }
 
     const unsubTrades = onSnapshot(query(collection(db, 'trades'), orderBy('createdAt', 'desc'), limit(50)), (snap) => {
       const t: Trade[] = [];

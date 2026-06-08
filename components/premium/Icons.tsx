@@ -39,6 +39,7 @@ export const Icons = {
 export const SvgIcon = ({ name, size = 16, className = '' }: { name: keyof typeof Icons; size?: number; className?: string }) => {
   const svg = Icons[name];
   if (!svg) return null;
-  const sized = svg.replace(/viewBox="0 0 24 24"/, `viewBox="0 0 24 24" width="${size}" height="${size}"`);
+  const svgStr = typeof svg === 'function' ? svg(size) : svg;
+  const sized = svgStr.replace(/viewBox="0 0 24 24"/, `viewBox="0 0 24 24" width="${size}" height="${size}"`);
   return <span className={className} dangerouslySetInnerHTML={{ __html: sized }} />;
 };
