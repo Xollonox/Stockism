@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <title>Stockism – Elite Lookism Trading Terminal</title>
+    <meta name="description" content="The ultimate Lookism fan trading market. Premium character trading and real-time rankings." />
+    <meta name="theme-color" content="#050505" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bg0: 'var(--color-bg0)',
+              bg1: 'var(--color-bg1)',
+              card: 'var(--color-card)',
+              line: 'var(--color-line)',
+              brand: 'var(--color-brand)',
+              brand2: 'var(--color-brand2)',
+              good: 'var(--color-good)',
+              bad: 'var(--color-bad)',
+              warn: 'var(--color-warn)',
+              muted: 'var(--color-muted)',
+            },
+            fontFamily: {
+              heading: ['Orbitron', 'sans-serif'],
+              sans: ['Outfit', 'Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
+              body: ['Outfit', 'system-ui', 'sans-serif'],
+            },
+            animation: {
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'shimmer': 'shimmer 2s linear infinite',
+              'fade-in-up': 'fadeInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+              'shake': 'shake 120ms cubic-bezier(0.4, 0, 0.2, 1) both',
+              'scanline': 'scanline 2s linear infinite',
+            },
+            keyframes: {
+              shimmer: {
+                '0%': { backgroundPosition: '-200% 0' },
+                '100%': { backgroundPosition: '200% 0' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(12px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              shake: {
+                '0%, 100%': { transform: 'translateX(0)' },
+                '20%': { transform: 'translateX(-2.5px)' },
+                '40%': { transform: 'translateX(2.5px)' },
+                '60%': { transform: 'translateX(-1.5px)' },
+                '80%': { transform: 'translateX(1.5px)' },
+              },
+              scanline: {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' }
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+      :root {
+        --color-bg0: #050505;
+        --color-bg1: rgba(20, 20, 23, 0.65);
+        --color-card: rgba(28, 28, 33, 0.45);
+        --color-line: rgba(255, 255, 255, 0.08);
+        --color-brand: #E11D48;
+        --color-brand2: #881337;
+        --color-good: #10B981;
+        --color-bad: #EF4444;
+        --color-warn: #F59E0B;
+        --color-muted: #9CA3AF;
+        --color-text-main: #F3F4F6;
+        --glass-blur: 12px;
+        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+      }
+
+      [data-theme='neon'] {
+        --color-bg0: #060212;
+        --color-bg1: rgba(11, 4, 24, 0.75);
+        --color-card: rgba(22, 10, 44, 0.45);
+        --color-line: rgba(209, 0, 243, 0.2);
+        --color-brand: #00F0FF;
+        --color-brand2: #FF007F;
+        --color-good: #39FF14;
+        --color-bad: #FF073A;
+        --color-warn: #FFE600;
+        --color-muted: #A594F4;
+        --color-text-main: #E5E0FA;
+        --glass-blur: 16px;
+        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+      }
+
+      body {
+        background-color: var(--color-bg0);
+        color: var(--color-text-main);
+        font-family: 'Outfit', sans-serif;
+        transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      [data-theme='neon'] body {
+        background-image: 
+          radial-gradient(circle at 50% 30%, rgba(209, 0, 243, 0.08), transparent 50%),
+          radial-gradient(circle at 10% 80%, rgba(0, 240, 255, 0.06), transparent 45%),
+          linear-gradient(rgba(209, 0, 243, 0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(209, 0, 243, 0.04) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 35px 35px, 35px 35px;
+        background-attachment: fixed;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+        opacity: 0.035;
+        pointer-events: none;
+        z-index: 10000;
+      }
+
+      /* CRT Scanline effect */
+      .crt-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.12) 50%);
+        background-size: 100% 4px;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0.15;
+      }
+      [data-theme='neon'] .crt-overlay {
+        opacity: 0.25;
+      }
+
+      .font-heading {
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      .glass-panel {
+        background-color: var(--color-bg1);
+        backdrop-filter: blur(var(--glass-blur));
+        -webkit-backdrop-filter: blur(var(--glass-blur));
+        border: 1px solid var(--color-line);
+        box-shadow: var(--glass-shadow);
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      /* Laser Sweep Animation */
+      @keyframes laser-sweep {
+        0% { transform: translateY(-100%) rotate(-12deg); }
+        100% { transform: translateY(220%) rotate(-12deg); }
+      }
+      .laser-sweep {
+        position: absolute;
+        top: -50%; left: -25%; width: 150%; height: 40px;
+        background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.08) 50%, transparent);
+        transform: rotate(-12deg);
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0;
+      }
+      [data-theme='neon'] .laser-sweep {
+        background: linear-gradient(to bottom, transparent, rgba(0, 240, 255, 0.15) 50%, transparent);
+      }
+      .group:hover .laser-sweep {
+        animation: laser-sweep 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        opacity: 1;
+      }
+
+      /* Glitch Effect on Title Hover */
+      @keyframes glitch-skew {
+        0% { transform: skew(0deg); }
+        20% { transform: skew(-3deg); }
+        40% { transform: skew(3deg); }
+        60% { transform: skew(-1deg); }
+        80% { transform: skew(1deg); }
+        100% { transform: skew(0deg); }
+      }
+      .cyber-glitch-hover:hover {
+        animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+      }
+
+      /* Glow pulse effect */
+      @keyframes neon-glow {
+        0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.1), 0 0 2px rgba(0, 240, 255, 0.05); }
+        50% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), 0 0 5px rgba(0, 240, 255, 0.1); }
+      }
+      .neon-glow-pulse {
+        animation: neon-glow 3s infinite ease-in-out;
+      }      /* Selection styling */
+      @keyframes float-dust {
+        0% { transform: translateY(0px) translateX(0px); opacity: 0; }
+        10% { opacity: 0.4; }
+        90% { opacity: 0.4; }
+        100% { transform: translateY(-100px) translateX(25px); opacity: 0; }
+      }
+      .dust-particle {
+        position: absolute;
+        width: 3px;
+        height: 3px;
+        background: var(--color-brand);
+        border-radius: 50%;
+        pointer-events: none;
+        animation: float-dust 8s infinite linear;
+      }
+
+      ::-moz-selection { background: var(--color-brand); color: #fff; }
+      ::selection { background: var(--color-brand); color: #fff; }
+
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: var(--color-bg0); }
+      ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
+      [data-theme='neon'] ::-webkit-scrollbar-thumb:hover { background: var(--color-brand2); }
+
+      .clip-corner {
+        clip-path: polygon(
+          0 0, 
+          100% 0, 
+          100% calc(100% - 8px), 
+          calc(100% - 8px) 100%, 
+          0 100%
+        );
+      }
+
+      .stockism-character-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: grayscale(40%) saturate(80%) brightness(0.85);
+        transform: scale(1);
+        transition: filter 400ms cubic-bezier(0.25, 1, 0.5, 1), transform 400ms cubic-bezier(0.25, 1, 0.5, 1);
+        will-change: transform, filter;
+      }
+
+      .character-card:hover .stockism-character-image,
+      .character-card:focus-within .stockism-character-image {
+        filter: grayscale(0%) saturate(115%) brightness(0.95);
+        transform: scale(1.03);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, ::before, ::after {
+          animation-delay: -1ms !important;
+          animation-duration: 1ms !important;
+          animation-iteration-count: 1 !important;
+          background-attachment: initial !important;
+          scroll-behavior: auto !important;
+          transition-duration: 0s !important;
+          transition-delay: 0s !important;
+        }
+        .stockism-character-image {
+          transition: none !important;
+          filter: none !important;
+          transform: none !important;
+        }
+        .animate-shake, .laser-sweep, .cyber-glitch-hover:hover {
+          animation: none !important;
+        }
+      }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "firebase/": "https://esm.sh/firebase@^12.8.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const savedTheme = localStorage.getItem('stockism-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+  <script type="module" src="/core/index.tsx"></script>
+</body>
+</html>
