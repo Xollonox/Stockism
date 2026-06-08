@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { db, auth } from '../../services/firebase';
 import * as Auth from 'firebase/auth';
 import { Button } from '../ui/Button';
@@ -60,7 +60,6 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
   const [loading, setLoading] = useState(false);
   const [typedTitle, setTypedTitle] = useState('');
   const [showContent, setShowContent] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const [logs, setLogs] = useState<LogEntry[]>([
     { timestamp: "19:40:02", type: 'SYS', message: "System core boot successful. Version 1.4.2-L" },
@@ -70,28 +69,6 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
   ]);
 
   const logContainerRef = useRef<HTMLDivElement>(null);
-  const tiltRef = useRef<HTMLDivElement>(null);
-  const rafRef = useRef<number | null>(null);
-
-  // 3D tilt on mouse move — direct DOM, no React re-renders
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current || !tiltRef.current) return;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => {
-      const rect = containerRef.current!.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 6;
-      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -6;
-      tiltRef.current!.style.transform = `rotateX(${y}deg) rotateY(${x}deg)`;
-    });
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    if (tiltRef.current) {
-      tiltRef.current.style.transform = 'rotateX(0deg) rotateY(0deg)';
-      tiltRef.current.style.transition = 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
-    }
-  }, []);
 
   // Typewriter effect on slide change
   useEffect(() => {
@@ -237,20 +214,11 @@ export const OnboardingPortal: React.FC<OnboardingPortalProps> = ({ onSuccess, o
 
       {/* Main 3D Glass Card */}
       <div
-        ref={containerRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className="card-3d w-full max-w-6xl"
-        style={{
-          perspective: '1200px',
-        }}
+        className="w-full max-w-6xl"
       >
         <div
-          ref={tiltRef}
-          className="card-3d-inner w-full glass-panel rounded-2xl overflow-hidden border border-white/10 z-10 flex flex-col lg:flex-row relative"
+          className="w-full glass-panel rounded-2xl overflow-hidden border border-white/10 z-10 flex flex-col lg:flex-row relative"
           style={{
-            transition: 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
-            willChange: 'transform',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
             background: 'linear-gradient(135deg, rgba(20,20,23,0.7), rgba(28,28,33,0.3))',
