@@ -28,7 +28,6 @@ import { Market } from '../components/features/Market';
 import { WaifuPanel } from '../components/features/WaifuPanel';
 import { StrongestRank } from '../components/features/StrongestRank';
 import { OnboardingPortal } from '../components/features/OnboardingPortal';
-import { GoogleGenAI } from "@google/genai";
 
 const SkeletonLoader = () => (
   <div className="min-h-screen bg-bg0 p-8 flex items-center justify-center">
@@ -74,12 +73,6 @@ export default function App() {
   const [profileMessage, setProfileMessage] = useState({ text: "", type: "" });
   const [popTab, setPopTab] = useState<'Male' | 'Female'>('Male');
   
-  // Lore Analysis state
-  const [loreCharId, setLoreCharId] = useState("");
-  const [loreType, setLoreType] = useState("");
-  const [loreResult, setLoreResult] = useState("");
-  const [loreLoading, setLoreLoading] = useState(false);
-
   const [settings, setSettings] = useState<GameSettings>({
     tradingEnabled: true,
     marketMessage: "",
@@ -374,40 +367,6 @@ export default function App() {
      } catch (e: any) { alert(e.message); }
   };
 
-  const handleAnalyze = async () => {
-    if (!loreCharId || !loreType || loreLoading) return;
-    const char = market.find(c => c.id === loreCharId);
-    if (!char) return;
-
-    setLoreLoading(true);
-    setLoreResult("");
-
-    try {
-      const apiKey = process.env.API_KEY;
-      if (!apiKey) throw new Error("API Key missing");
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Target Character: ${char.name}. Requested Canon Data: ${loreType}.`,
-        config: {
-          systemInstruction: `You are the Lookism Canon Specialist. 
-          Your ONLY goal is to provide confirmed, story-accurate information from the Lookism manhwa.
-          STRICT RULES:
-          - Output ONLY information confirmed in the Lookism manhwa.
-          - NO predictions, NO fan theories.
-          - Format: Bullet points only (Maximum 6).
-          - Sentences must be factual and short.`,
-          temperature: 0.3,
-        }
-      });
-      setLoreResult(response.text || "Lore data unavailable.");
-    } catch (e) {
-      setLoreResult("Analysis module offline. Verify connection.");
-    } finally {
-      setLoreLoading(false);
-    }
-  };
-
   if (loadingError) return (
     <div className="min-h-screen bg-bg0 flex items-center justify-center p-4">
       <div className="glass-panel p-10 text-center max-w-sm w-full border-bad/50 shadow-2xl">
@@ -453,7 +412,7 @@ export default function App() {
                  <span className="text-[8px] font-heading font-black text-muted uppercase tracking-widest block mb-1">COGNITIVE_GRID</span>
                  <div className="flex items-center gap-2">
                    <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse shadow-[0_0_6px_var(--color-brand)]" />
-                   <span className="text-[10px] font-mono font-black text-white">GEMINI_3.5_OK</span>
+                   <span className="text-[10px] font-mono font-black text-white">SYS://ONLINE</span>
                  </div>
               </div>
               <div className="glass-panel p-4 rounded-md relative overflow-hidden group">
@@ -539,55 +498,7 @@ export default function App() {
               </div>
             )}
 
-            <div className="glass-panel p-6 rounded-md space-y-4 animate-fade-in-up relative overflow-hidden group">
-               <div className="laser-sweep" />
-               <div className="flex items-center gap-2 mb-2">
-                  <div className="w-1.5 h-4 bg-brand rounded-full animate-pulse shadow-[0_0_8px_var(--color-brand)]" />
-                  <h3 className="text-xs font-heading font-black text-white uppercase tracking-[0.15em]">[ TRUE_LORE_ANALYSIS ]</h3>
-               </div>
-               
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <Select label="Select Character" value={loreCharId} onChange={e => setLoreCharId(e.target.value)}>
-                      <option value="">Choose Subject...</option>
-                      {market.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                   </Select>
-                   <Select label="Lore Type" value={loreType} onChange={e => setLoreType(e.target.value)}>
-                      <option value="">Select Data Category...</option>
-                      <option value="Canon Background">Canon Background</option>
-                      <option value="Affiliations & Crews">Affiliations & Crews</option>
-                      <option value="Confirmed Feats">Confirmed Feats</option>
-                      <option value="Relationships (Confirmed)">Relationships (Confirmed)</option>
-                      <option value="Current Story Status">Current Story Status</option>
-                   </Select>
-               </div>
 
-               <div className="flex justify-end">
-                   <Button 
-                      onClick={handleAnalyze} 
-                      disabled={!loreCharId || !loreType || loreLoading}
-                      className="!py-2 min-w-[140px] font-heading font-black tracking-widest text-[10px]"
-                   >
-                      {loreLoading ? "VERIFYING..." : "ANALYZE"}
-                   </Button>
-               </div>
-
-               {loreLoading && (
-                 <div className="mt-4 p-8 bg-black/60 border border-line rounded-md animate-pulse flex flex-col items-center justify-center gap-3">
-                   <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-                   <span className="text-[10px] font-heading font-black text-brand tracking-[0.2em] uppercase">DECRYPTING NEURAL DATA NODES...</span>
-                 </div>
-               )}
-
-               {loreResult && !loreLoading && (
-                  <div className="mt-4 p-5 bg-black/60 border border-line rounded-md animate-fade-in-up relative overflow-hidden">
-                     <div className="absolute top-1.5 right-2 text-[8px] font-heading font-black text-brand opacity-40 uppercase tracking-widest animate-pulse">Neural Link Active</div>
-                     <div className="absolute inset-0 bg-[radial-gradient(var(--color-line)_1px,transparent_1px)] [background-size:20px_20px] opacity-25 pointer-events-none" />
-                     <div className="font-mono text-sm text-[#E5E0FA] leading-relaxed whitespace-pre-wrap relative z-10">
-                        {loreResult}
-                     </div>
-                  </div>
-               )}
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up anim-delay-2 mb-8">
                <div className="glass-panel h-[400px] flex flex-col rounded-md relative overflow-hidden group">

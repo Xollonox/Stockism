@@ -5,7 +5,6 @@ import { Button } from '../ui/Button';
 import { Input, Select } from '../ui/Input';
 import { GameSettings, Character } from '../../types';
 import { CREWS, RARITIES, ADMIN_EMAIL } from '../../constants';
-import { GoogleGenAI } from "@google/genai";
 
 interface AdminPanelProps {
   settings: GameSettings;
@@ -14,7 +13,7 @@ interface AdminPanelProps {
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMainAdmin }) => {
-  const [activeTab, setActiveTab] = useState<'GENERAL' | 'MARKET' | 'USERS' | 'NEWS' | 'EVENTS' | 'AI_TOOLS'>('GENERAL');
+  const [activeTab, setActiveTab] = useState<'GENERAL' | 'MARKET' | 'USERS' | 'NEWS' | 'EVENTS'>('GENERAL');
   
   const placeholder = "/assets/placeholder-character.png";
 
@@ -58,14 +57,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMain
 
 
 
-  // AI Tools State
-  const [aiLoreCharId, setAiLoreCharId] = useState('');
-  const [aiLoreResult, setAiLoreResult] = useState('');
-  const [aiNewsTopic, setAiNewsTopic] = useState('');
-  const [aiNewsCharId, setAiNewsCharId] = useState('');
-  const [aiNewsResult, setAiNewsResult] = useState('');
-  const [aiSanityResult, setAiSanityResult] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
   useEffect(() => {
     if (activeTab === 'USERS') {
       fetchRecentUsers();
@@ -291,57 +282,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMain
     updateSetting('event', { active: false });
   };
 
-  const handleGenerateLore = async () => {
-    if (!aiLoreCharId || aiLoading) return;
-    const char = market.find(c => c.id === aiLoreCharId);
-    if (!char) return;
-    setAiLoading(true);
-    setAiLoreResult("");
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `Character: ${char.name} (Lookism)`,
-        config: {
-          systemInstruction: `Short, canon summary only.`,
-          temperature: 0.3
-        }
-      });
-      setAiLoreResult(response.text || "Uplink restricted.");
-    } catch(e) {
-      setAiLoreResult("Uplink unstable.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
-  const handleSanityCheck = async () => {
-    if (aiLoading) return;
-    setAiLoading(true);
-    setAiSanityResult("");
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: "Analyze current market roster.",
-        config: {
-          systemInstruction: `Observe roster distribution. Bullet points only.`,
-          temperature: 0.3
-        }
-      });
-      setAiSanityResult(response.text || "Uplink restricted.");
-    } catch(e) {
-      setAiSanityResult("Uplink unstable.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Premium Slanted Console Tabs */}
       <div className="flex gap-2 p-1.5 glass-panel rounded-md overflow-x-auto border border-line">
-        {['GENERAL', 'MARKET', 'USERS', 'NEWS', 'EVENTS', 'AI_TOOLS'].map((tab) => {
+        {['GENERAL', 'MARKET', 'USERS', 'NEWS', 'EVENTS'].map((tab) => {
           const isActive = activeTab === tab;
           return (
             <button
@@ -568,37 +513,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMain
         </div>
       )}
 
-      {activeTab === 'AI_TOOLS' && (
-        <div className="space-y-6 animate-fade-in-up">
-           <div className="glass-panel p-6 rounded-md border border-line relative overflow-hidden group">
-              <div className="laser-sweep" />
-              <h3 className="text-xs font-heading font-black text-white uppercase tracking-[0.2em] mb-4">[ DEEP_COGNITIVE_SCAN ]</h3>
-              <div className="flex gap-4 items-end bg-black/45 p-4 border border-line rounded-sm">
-                 <Select value={aiLoreCharId} onChange={e => setAiLoreCharId(e.target.value)} label="Target Subject" className="flex-1 font-mono text-xs">
-                    <option value="">Choose Node...</option>
-                    {market.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                 </Select>
-                 <Button onClick={handleGenerateLore} disabled={!aiLoreCharId || aiLoading} className="font-heading font-black text-[10px] tracking-widest px-8 !py-3">{aiLoading ? 'SCANNING...' : 'DEEP SCAN'}</Button>
-              </div>
-              {aiLoreResult && (
-                 <div className="mt-4 p-4 bg-black/60 border border-line rounded-md text-xs font-mono whitespace-pre-wrap leading-relaxed text-[#E5E0FA]">
-                    {aiLoreResult}
-                 </div>
-              )}
-           </div>
-           
-           <div className="glass-panel p-6 rounded-md border border-line relative overflow-hidden group">
-              <div className="laser-sweep" />
-              <h3 className="text-xs font-heading font-black text-white uppercase tracking-[0.2em] mb-4">[ ROSTER_SANITY_ANALYZER ]</h3>
-              <Button onClick={handleSanityCheck} disabled={aiLoading} className="w-full font-heading font-black text-[10px] tracking-widest !py-3" variant="secondary">{aiLoading ? 'ANALYZING MATRIX...' : 'RUN FULL ROSTER DIAGNOSTIC'}</Button>
-              {aiSanityResult && (
-                 <div className="mt-4 p-4 bg-black/60 border border-line rounded-md text-xs font-mono whitespace-pre-wrap leading-relaxed text-[#E5E0FA]">
-                    {aiSanityResult}
-                 </div>
-              )}
-           </div>
-        </div>
-      )}
+
     </div>
   );
 };

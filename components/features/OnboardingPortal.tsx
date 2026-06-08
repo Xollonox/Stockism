@@ -30,8 +30,8 @@ const BRIEFING_SLIDES = [
   },
   {
     protocol: "LORE_DIAGNOSTIC // 02",
-    title: "AI Deep Lore Scans",
-    description: "Access Gemini neural scanning nodes. Verify canon backgrounds, affiliations, confirmed story feats, and relationship vectors directly from Lookism database indexes.",
+    title: "Deep Lore Scans",
+    description: "Access comprehensive character intelligence. Verify canon backgrounds, affiliations, confirmed story feats, and relationship vectors directly from curated Lookism database indexes.",
     code: `>>> ENGAGING COGNITIVE GRID...
 [SCAN] Target: Gun Park
 [SCAN] Affiliation: Yamazaki Syndicate
