@@ -11,6 +11,9 @@ interface SettingsPanelProps {
   onToggleTheme: () => void;
   badges: string[];
   onClose: () => void;
+  aiAgentActive?: boolean;
+  onToggleAIAgent?: () => void;
+  onTriggerAICycle?: () => void;
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -106,6 +109,39 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               ))}
             </div>
           </div>
+
+          {/* AI Agent */}
+          {onToggleAIAgent && (
+            <div className="p-4 bg-black/30 border border-line rounded-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-heading font-black text-white uppercase tracking-wider flex items-center gap-2">
+                    🧠 AI Market Agent
+                    {aiAgentActive && <span className="w-2 h-2 bg-brand rounded-full animate-ping" />}
+                  </div>
+                  <div className="text-[9px] font-mono text-muted/60 mt-0.5">Auto-fluctuates prices & generates news every 15-30 min</div>
+                </div>
+                <button
+                  onClick={onToggleAIAgent}
+                  className={`w-14 h-7 rounded-full border transition-all relative shrink-0 ${
+                    aiAgentActive ? 'bg-brand/30 border-brand/50' : 'bg-black/40 border-white/10'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full absolute top-1 transition-all duration-300 ${
+                    aiAgentActive ? 'left-[30px] bg-brand shadow-[0_0_8px_var(--color-brand)]' : 'left-1 bg-muted/50'
+                  }`} />
+                </button>
+              </div>
+              {aiAgentActive && onTriggerAICycle && (
+                <button
+                  onClick={onTriggerAICycle}
+                  className="mt-3 w-full py-2 text-[9px] font-heading font-black uppercase tracking-widest bg-brand/10 border border-brand/30 text-brand hover:bg-brand/20 rounded-sm transition-all"
+                >
+                  🔄 RUN MANUAL AI CYCLE NOW
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="p-4 bg-black/30 border border-line rounded-sm">

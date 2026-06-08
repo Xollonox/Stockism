@@ -43,6 +43,7 @@ import { MobileNav } from '../components/features/MobileNav';
 import { MysteryBoxShop } from '../components/features/MysteryBoxShop';
 import { AdminTools } from '../components/features/AdminTools';
 import { usePullToRefresh, haptic } from '../hooks/usePullToRefresh';
+import { startMarketAgent, stopMarketAgent, triggerAICycle } from '../utils/marketAgent';
 import { createConfetti } from '../utils/confetti';
 import { useKeyboard } from '../hooks/useKeyboard';
 import { SettingsPanel } from '../components/features/SettingsPanel';
@@ -76,6 +77,8 @@ function AppContent() {
   const [tutorialStep, setTutorialStep] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [showMysteryBox, setShowMysteryBox] = useState(false);
+  const [aiAgentActive, setAiAgentActive] = useState(() => localStorage.getItem('stockism_ai_agent') !== 'false');
+  const [aiAgentRunning, setAiAgentRunning] = useState(false);
   const [streak, setStreak] = useState(0);
   const [streakBonus, setStreakBonus] = useState(0);
   const [showStreak, setShowStreak] = useState(false);
@@ -335,6 +338,12 @@ function AppContent() {
         }
       });
     });
+    // Start AI market agent when market is ready
+    if (aiAgentActive && chars.length > 0) {
+      startMarketAgent(chars);
+      setAiAgentRunning(true);
+    }
+
     const unsubTrades = onSnapshot(query(collection(db, 'trades'), orderBy('createdAt', 'desc'), limit(50)), (snap) => {
       const t: Trade[] = [];
       snap.forEach(d => t.push(d.data() as Trade));
@@ -579,6 +588,34 @@ function AppContent() {
     const next = !animationsEnabled;
     setAnimationsEnabled(next);
     localStorage.setItem('stockism_animations', String(next));
+  };
+
+  const handleToggleAIAgent = () => {
+    const next = !aiAgentActive;
+    setAiAgentActive(next);
+    localStorage.setItem('stockism_ai_agent', String(next));
+    if (next && market.length > 0) {
+      startMarketAgent(market);
+      setAiAgentRunning(true);
+      addToast({ message: '🧠 AI Market Agent activated — prices will auto-fluctuate every 15-30 min', type: 'info' });
+    } else {
+      stopMarketAgent();
+      setAiAgentRunning(false);
+      addToast({ message: 'AI Market Agent deactivated', type: 'info' });
+    }
+  };
+
+  const handleTriggerAICycle = async () => {
+    if (market.length === 0) return;
+    addToast({ message: '🧠 Running AI market analysis...', type: 'info' });
+    try {
+      const result = await triggerAICycle(market);
+      addToast({ message: `✅ AI cycle complete: ${result.changes} prices changed, ${result.newsCount} news generated`, type: 'success' });
+      sounds.achievement();
+    } catch (e: any) {
+      addToast({ message: `AI cycle failed: ${e.message}`, type: 'error' });
+      sounds.error();
+    }
   };
 
   const handleSearch = (val: string) => {
@@ -1161,6 +1198,9 @@ function AppContent() {
           }}
           badges={badges}
           onClose={() => setShowSettings(false)}
+          aiAgentActive={aiAgentActive}
+          onToggleAIAgent={handleToggleAIAgent}
+          onTriggerAICycle={handleTriggerAICycle}
         />
       )}
 
