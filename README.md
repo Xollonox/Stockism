@@ -1,3 +1,9 @@
+<div align="center">
+  <img src="assets/banner.svg" alt="Stockism Banner" width="100%" />
+</div>
+
+<br />
+
 <h1 align="center">📈 STOCKISM — Elite Lookism Trading Terminal</h1>
 
 <p align="center">
