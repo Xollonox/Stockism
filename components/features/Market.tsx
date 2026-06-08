@@ -12,9 +12,11 @@ interface MarketProps {
   onCardClick?: (c: Character) => void;
   settings: GameSettings;
   frozenIds: string[];
+  recentSearches?: string[];
+  onClearRecentSearches?: () => void;
 }
 
-export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSearch, onTrade, onCardClick, settings, frozenIds }) => {
+export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSearch, onTrade, onCardClick, settings, frozenIds, recentSearches, onClearRecentSearches }) => {
   const [crewFilter, setCrewFilter] = useState("All");
   const [sortBy, setSortBy] = useState("name");
 
@@ -68,13 +70,35 @@ export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSe
        </div>
 
        {/* Filter Bar with Glassmorphism */}
-       <div className="flex flex-col md:flex-row gap-0 glass-panel border border-line p-0 overflow-hidden sticky top-4 z-30 shadow-xl rounded-sm animate-fade-in-up">
-          <Input 
-            placeholder="SEARCH TARGET NODES..." 
-            value={search} 
-            onChange={e => setSearch(e.target.value)} 
-            className="!bg-bg0/80 !backdrop-blur-md !border-0 !border-r !border-line focus:!ring-0 !rounded-none h-12" 
-          />
+       <div className="flex flex-col md:flex-row gap-0 glass-panel border border-line p-0 overflow-hidden sticky top-4 z-30 shadow-xl rounded-sm animate-fade-in-up relative">
+          <div className="relative flex-1">
+            <Input 
+              placeholder="SEARCH TARGET NODES..." 
+              value={search} 
+              onChange={e => setSearch(e.target.value)}
+              onFocus={() => {}}
+              className="!bg-bg0/80 !backdrop-blur-md !border-0 !border-r !border-line focus:!ring-0 !rounded-none h-12 w-full" 
+            />
+            {/* Recent Searches Dropdown */}
+            {search === '' && recentSearches && recentSearches.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-50 bg-bg1/95 backdrop-blur-xl border border-line border-t-0 rounded-b-md shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-line bg-black/20">
+                  <span className="text-[8px] font-heading font-black text-muted/50 uppercase tracking-widest">Recent Queries</span>
+                  <button onClick={onClearRecentSearches} className="text-[8px] font-mono text-muted/40 hover:text-bad transition-colors">Clear</button>
+                </div>
+                {recentSearches.map((s, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSearch(s)}
+                    className="w-full text-left px-4 py-2.5 text-[11px] font-mono text-muted hover:bg-brand/10 hover:text-white transition-all border-b border-white/5 last:border-0 flex items-center gap-3"
+                  >
+                    <svg className="w-3 h-3 text-muted/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Select 
             value={crewFilter} 
             onChange={e => setCrewFilter(e.target.value)} 

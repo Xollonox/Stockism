@@ -1,0 +1,19 @@
+{
+  "name": "Stockism – Elite Lookism Trading Terminal",
+  "short_name": "Stockism",
+  "description": "The ultimate Lookism fan trading market. Premium character trading and real-time rankings.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "games", "entertainment"]
+}

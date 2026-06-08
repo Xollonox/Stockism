@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/Button';
 import { formatMoney } from '../../services/firebase';
+import { useSwipe } from '../../hooks/useSwipe';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface LayoutProps {
   isAdmin: boolean;
   onLogout: () => void;
   onLoginRequest?: () => void;
+  onSettingsRequest?: () => void;
   cash: number;
   netWorth: number;
   isTradingEnabled: boolean;
@@ -18,10 +20,24 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
-  children, activeView, setView, userEmail, isAdmin, onLogout, onLoginRequest, cash, netWorth, isTradingEnabled, bannerImageUrl 
+  children, activeView, setView, userEmail, isAdmin, onLogout, onLoginRequest, onSettingsRequest, cash, netWorth, isTradingEnabled, bannerImageUrl 
 }) => {
   
   const isGuest = !userEmail;
+  const mainRef = useRef<HTMLDivElement>(null);
+  const viewOrder = ['dashboard', 'market', 'waifu', 'portfolio', 'trades', 'leaderboard', 'popularity', 'strongest', 'news'];
+
+  useSwipe(mainRef as React.RefObject<HTMLElement>, {
+    onSwipeLeft: () => {
+      const idx = viewOrder.indexOf(activeView);
+      if (idx < viewOrder.length - 1) setView(viewOrder[idx + 1]);
+    },
+    onSwipeRight: () => {
+      const idx = viewOrder.indexOf(activeView);
+      if (idx > 0) setView(viewOrder[idx - 1]);
+    },
+  });
+
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('stockism-theme');
     return saved === 'neon' ? 'neon' : 'dark';
@@ -116,8 +132,18 @@ export const Layout: React.FC<LayoutProps> = ({
   return (
     <div className="min-h-screen bg-bg0 text-white font-body selection:bg-brand flex flex-col lg:flex-row transition-colors duration-500 overflow-hidden relative">
       
-      {/* Universal Theme Toggle - Fixed Top Right */}
-      <div className="fixed top-5 right-20 lg:right-10 z-[110] flex items-center">
+      {/* Universal Top Right Controls */}
+      <div className="fixed top-5 right-20 lg:right-10 z-[110] flex items-center gap-2">
+        <button
+          onClick={onSettingsRequest}
+          className="p-2.5 glass-panel border border-line hover:border-brand text-muted hover:text-brand transition-all shadow-lg group active:scale-95 rounded-md"
+          title="System Configuration"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
         <button 
           onClick={toggleTheme}
           className="p-2 py-1.5 glass-panel border border-line hover:border-brand text-muted hover:text-brand transition-all flex items-center justify-center shadow-lg group active:scale-95 rounded-md"
@@ -265,12 +291,22 @@ export const Layout: React.FC<LayoutProps> = ({
                      </span>
                  </div>
              </div>
-             <div className="text-[10px] font-heading font-bold text-white/20 uppercase tracking-[0.4em] select-none pointer-events-none hover:text-white/40 transition-colors duration-300">
-                 [ {activeView} ]
+             <div className="flex items-center gap-4">
+                <div className="hidden xl:flex items-center gap-2 text-[8px] font-mono text-muted/30">
+                   <kbd className="px-1.5 py-0.5 bg-black/40 border border-line rounded text-[8px]">1-6</kbd>
+                   <span>Nav</span>
+                   <kbd className="px-1.5 py-0.5 bg-black/40 border border-line rounded text-[8px]">M</kbd>
+                   <span>Theme</span>
+                   <kbd className="px-1.5 py-0.5 bg-black/40 border border-line rounded text-[8px]">Esc</kbd>
+                   <span>Close</span>
+                </div>
+                <div className="text-[10px] font-heading font-bold text-white/20 uppercase tracking-[0.4em] select-none pointer-events-none hover:text-white/40 transition-colors duration-300">
+                   [ {activeView} ]
+                </div>
              </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 lg:p-10 relative custom-scrollbar z-10 flex flex-col">
+        <div ref={mainRef} className="flex-1 overflow-y-auto p-4 lg:p-10 relative custom-scrollbar z-10 flex flex-col">
           <div className="max-w-7xl mx-auto space-y-10 pb-32 w-full flex-1">
             {children}
           </div>

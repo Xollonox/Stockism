@@ -37,6 +37,12 @@ import { DailyMissions } from '../components/features/DailyMissions';
 import { useSound } from '../hooks/useSound';
 import { ACHIEVEMENTS, checkNewAchievements } from '../utils/achievements';
 import { DAILY_MISSIONS, getTodayStr, checkMissionProgress } from '../utils/missions';
+import { createConfetti } from '../utils/confetti';
+import { useKeyboard } from '../hooks/useKeyboard';
+import { SettingsPanel } from '../components/features/SettingsPanel';
+import { PortfolioChart } from '../components/features/PortfolioChart';
+import { usePriceFlash } from '../hooks/usePriceFlash';
+import { addRecentSearch, getRecentSearches, clearRecentSearches } from '../utils/recentSearches';
 
 const SkeletonLoader = () => (
   <div className="min-h-screen bg-bg0 p-8 flex items-center justify-center">
@@ -62,6 +68,11 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('stockism_sound') !== 'false');
+  const [animationsEnabled, setAnimationsEnabled] = useState(() => localStorage.getItem('stockism_animations') !== 'false');
+  const [netWorthHistory, setNetWorthHistory] = useState<{ time: number; netWorth: number }[]>([]);
+  const [recentSearches, setRecentSearchesState] = useState<string[]>(getRecentSearches());
   
   const [cash, setCash] = useState(0);
   const [netWorth, setNetWorth] = useState(0);
@@ -144,6 +155,7 @@ function AppContent() {
   useEffect(() => {
     if (newAchievements.length > 0) {
       sounds.achievement();
+      if (animationsEnabled) createConfetti(40);
       newAchievements.forEach(ach => {
         addToast({ message: `🏆 Achievement Unlocked: ${ach.name}`, type: 'achievement', duration: 5000 });
       });
@@ -179,6 +191,39 @@ function AppContent() {
   }, [user, username, netWorth, holdings, trades, leaderboard, badges]);
 
   useEffect(() => { checkAchievements(); }, [netWorth, trades.length]);
+
+  // Track net worth history for portfolio chart
+  useEffect(() => {
+    if (!user) return;
+    setNetWorthHistory(prev => {
+      const last = prev[prev.length - 1];
+      if (last && Date.now() - last.time < 60000) {
+        // Update last entry if within 1 minute
+        const updated = [...prev];
+        updated[updated.length - 1] = { time: Date.now(), netWorth };
+        return updated;
+      }
+      const next = [...prev, { time: Date.now(), netWorth }];
+      return next.slice(-100); // Keep last 100 points
+    });
+  }, [netWorth, user]);
+
+  // Keyboard shortcuts
+  useKeyboard([
+    { key: '1', action: () => setView('dashboard') },
+    { key: '2', action: () => setView('market') },
+    { key: '3', action: () => setView('waifu') },
+    { key: '4', action: () => user && setView('portfolio') },
+    { key: '5', action: () => setView('leaderboard') },
+    { key: '6', action: () => setView('trades') },
+    { key: 'Escape', action: () => { setCharModal(null); setTradeChar(null); setShowSettings(false); } },
+    { key: 'm', action: () => {
+      const current = localStorage.getItem('stockism-theme') || 'dark';
+      const next = current === 'dark' ? 'neon' : 'dark';
+      localStorage.setItem('stockism-theme', next);
+      window.location.reload();
+    }},
+  ]);
 
   useEffect(() => {
     const timer = setTimeout(() => { if (loading) setLoadingError(true); }, 12000);
@@ -387,6 +432,8 @@ function AppContent() {
       updateDoc(doc(db, 'users_public', user.uid), { missions: updated }).catch(() => {});
     }
     
+    if (animationsEnabled) createConfetti(side === 'BUY' ? 20 : 10);
+    
     const char = market.find(c => c.id === charId);
     addToast({ message: `${side === 'BUY' ? '✅ Bought' : '❌ Sold'} ${qty}x ${char?.name || charId} for Φ ${formatMoney((char?.price || 0) * qty)}`, type: side === 'BUY' ? 'success' : 'info' });
   };
@@ -465,6 +512,26 @@ function AppContent() {
     setCharModal(char);
   };
 
+  const handleToggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    localStorage.setItem('stockism_sound', String(next));
+  };
+
+  const handleToggleAnimations = () => {
+    const next = !animationsEnabled;
+    setAnimationsEnabled(next);
+    localStorage.setItem('stockism_animations', String(next));
+  };
+
+  const handleSearch = (val: string) => {
+    setSearch(val);
+    if (val.trim()) {
+      const updated = addRecentSearch(val);
+      setRecentSearchesState(updated);
+    }
+  };
+
   if (showSplash) return <SplashScreen onFinish={() => setShowSplash(false)} />;
 
   if (loadingError) return (
@@ -515,6 +582,7 @@ function AppContent() {
         isAdmin={isAdmin}
         onLogout={handleLogout}
         onLoginRequest={() => setShowAuthModal(true)}
+        onSettingsRequest={() => setShowSettings(true)}
         cash={cash}
         netWorth={netWorth}
         isTradingEnabled={settings.tradingEnabled}
@@ -725,8 +793,8 @@ function AppContent() {
           );
         })()}
 
-        {view === 'market' && <Market market={market} search={search} setSearch={setSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} />}
-        {view === 'waifu' && <WaifuPanel market={market} search={search} setSearch={setSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} />}
+        {view === 'market' && <Market market={market} search={search} setSearch={handleSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} recentSearches={recentSearches} onClearRecentSearches={() => { clearRecentSearches(); setRecentSearchesState([]); }} />}
+        {view === 'waifu' && <WaifuPanel market={market} search={search} setSearch={handleSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} />}
         {view === 'news' && <div className="max-w-3xl mx-auto space-y-4">{news.map(n => <NewsCard key={n.id} item={n} onJumpToMarket={c => { setSearch(c); setView('market'); }} />)}</div>}
         
         {view === 'trades' && (
@@ -772,6 +840,18 @@ function AppContent() {
           <div className="space-y-4 animate-fade-in-up">
             {user && (
               <>
+                {/* Portfolio Performance Chart */}
+                <div className="glass-panel p-6 rounded-md relative overflow-hidden group">
+                  <div className="laser-sweep" />
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-1.5 h-4 bg-brand rounded-full animate-pulse" />
+                    <h3 className="text-xs font-heading font-black text-white uppercase tracking-[0.15em]">[ PORTFOLIO PERFORMANCE ]</h3>
+                  </div>
+                  <div className="overflow-x-auto pb-2">
+                    <PortfolioChart history={netWorthHistory} width={Math.min(600, typeof window !== 'undefined' ? window.innerWidth - 80 : 600)} height={180} />
+                  </div>
+                </div>
+
                 <div className="glass-panel p-6 flex flex-col md:flex-row justify-between items-center gap-4 relative overflow-hidden">
                   <div>
                     <h2 className="text-2xl font-heading text-white">ASSET ALLOCATION</h2>
@@ -958,6 +1038,24 @@ function AppContent() {
           />
         )}
       </Layout>
+
+      {showSettings && (
+        <SettingsPanel
+          soundEnabled={soundEnabled}
+          onToggleSound={handleToggleSound}
+          animationsEnabled={animationsEnabled}
+          onToggleAnimations={handleToggleAnimations}
+          theme={localStorage.getItem('stockism-theme') || 'dark'}
+          onToggleTheme={() => {
+            const current = localStorage.getItem('stockism-theme') || 'dark';
+            const next = current === 'dark' ? 'neon' : 'dark';
+            localStorage.setItem('stockism-theme', next);
+            window.location.reload();
+          }}
+          badges={badges}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
 
       {showAuthModal && !user && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">

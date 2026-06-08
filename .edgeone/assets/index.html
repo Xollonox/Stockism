@@ -10,9 +10,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate icon" type="image/png" sizes="32x32" href="https://iconsear.ch/images/32/stock.png" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -201,6 +198,7 @@
       }
 
       /* CRT Scanline effect */
+
       .crt-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
@@ -210,6 +208,7 @@
         pointer-events: none;
         opacity: 0.15;
       }
+
       [data-theme='neon'] .crt-overlay {
         opacity: 0.25;
       }
@@ -234,10 +233,12 @@
       }
 
       /* Laser Sweep Animation */
+
       @keyframes laser-sweep {
         0% { transform: translateY(-100%) rotate(-12deg); }
         100% { transform: translateY(220%) rotate(-12deg); }
       }
+
       .laser-sweep {
         position: absolute;
         top: -50%; left: -25%; width: 150%; height: 40px;
@@ -247,15 +248,18 @@
         z-index: 10;
         opacity: 0;
       }
+
       [data-theme='neon'] .laser-sweep {
         background: linear-gradient(to bottom, transparent, rgba(0, 240, 255, 0.15) 50%, transparent);
       }
+
       .group:hover .laser-sweep {
         animation: laser-sweep 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         opacity: 1;
       }
 
       /* Glitch Effect on Title Hover */
+
       @keyframes glitch-skew {
         0% { transform: skew(0deg); }
         20% { transform: skew(-3deg); }
@@ -264,24 +268,31 @@
         80% { transform: skew(1deg); }
         100% { transform: skew(0deg); }
       }
+
       .cyber-glitch-hover:hover {
         animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
       }
 
       /* Glow pulse effect */
+
       @keyframes neon-glow {
         0%, 100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.1), 0 0 2px rgba(0, 240, 255, 0.05); }
         50% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.25), 0 0 5px rgba(0, 240, 255, 0.1); }
       }
+
       .neon-glow-pulse {
         animation: neon-glow 3s infinite ease-in-out;
-      }      /* Selection styling */
+      }
+
+      /* Selection styling */
+
       @keyframes float-dust {
         0% { transform: translateY(0px) translateX(0px); opacity: 0; }
         10% { opacity: 0.4; }
         90% { opacity: 0.4; }
         100% { transform: translateY(-100px) translateX(25px); opacity: 0; }
       }
+
       .dust-particle {
         position: absolute;
         width: 3px;
@@ -293,12 +304,17 @@
       }
 
       ::-moz-selection { background: var(--color-brand); color: #fff; }
+
       ::selection { background: var(--color-brand); color: #fff; }
 
       ::-webkit-scrollbar { width: 6px; height: 6px; }
+
       ::-webkit-scrollbar-track { background: var(--color-bg0); }
+
       ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+
       ::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
+
       [data-theme='neon'] ::-webkit-scrollbar-thumb:hover { background: var(--color-brand2); }
 
       .clip-corner {
@@ -352,20 +368,24 @@
          ═══════════════════════════════════════════════ */
 
       /* === 3D Card Tilt Container === */
+
       .card-3d {
         perspective: 1200px;
         transform-style: preserve-3d;
       }
+
       .card-3d-inner {
         transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         transform-style: preserve-3d;
         will-change: transform;
       }
+
       .card-3d:hover .card-3d-inner {
         transform: rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg));
       }
 
       /* === Glossy Reflection Overlay === */
+
       .glass-gloss::after {
         content: '';
         position: absolute;
@@ -382,9 +402,11 @@
       }
 
       /* === Animated Border Gradient === */
+
       .border-gradient {
         position: relative;
       }
+
       .border-gradient::before {
         content: '';
         position: absolute;
@@ -402,21 +424,25 @@
         opacity: 0.4;
         transition: opacity 0.3s ease;
       }
+
       .border-gradient:hover::before {
         opacity: 0.8;
       }
 
       /* === Price Change Animation === */
+
       .price-up {
         animation: priceFlash 0.4s ease-out;
         color: #10B981 !important;
       }
+
       .price-down {
         animation: priceFlash 0.4s ease-out;
         color: #EF4444 !important;
       }
 
       /* === Particle Sparkle Container === */
+
       .particle-container {
         position: absolute;
         inset: 0;
@@ -424,6 +450,7 @@
         overflow: hidden;
         z-index: 20;
       }
+
       .particle {
         position: absolute;
         width: 3px;
@@ -436,18 +463,22 @@
       }
 
       /* === Glowing Text Effect === */
+
       .text-glow {
         text-shadow: 0 0 10px var(--color-brand), 0 0 20px var(--color-brand), 0 0 40px var(--color-brand);
       }
+
       .text-glow-good {
         text-shadow: 0 0 10px var(--color-good), 0 0 20px var(--color-good);
       }
 
       /* === Smooth Page Transitions === */
+
       .view-enter {
         opacity: 0;
         transform: translateY(12px) scale(0.99);
       }
+
       .view-enter-active {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -455,36 +486,52 @@
       }
 
       /* === Premium Data Ticker === */
+
       .ticker-wrap {
         overflow: hidden;
         white-space: nowrap;
         position: relative;
       }
+
       .ticker-content {
         display: inline-flex;
         animation: dataScroll 30s linear infinite;
       }
+
       .ticker-content:hover {
         animation-play-state: paused;
       }
 
       /* === Rarity-specific Border Glow Animations === */
+
       .rarity-mythic { box-shadow: 0 0 15px rgba(239,68,68,0.2), inset 0 0 15px rgba(239,68,68,0.05); }
+
       .rarity-legendary { box-shadow: 0 0 12px rgba(245,158,11,0.15), inset 0 0 12px rgba(245,158,11,0.03); }
+
       .rarity-epic { box-shadow: 0 0 10px rgba(192,38,211,0.12); }
+
       .rarity-rare { box-shadow: 0 0 8px rgba(59,130,246,0.08); }
 
       /* === Staggered Animation Delays === */
+
       .stagger-1 { animation-delay: 0.05s !important; }
+
       .stagger-2 { animation-delay: 0.1s !important; }
+
       .stagger-3 { animation-delay: 0.15s !important; }
+
       .stagger-4 { animation-delay: 0.2s !important; }
+
       .stagger-5 { animation-delay: 0.25s !important; }
+
       .stagger-6 { animation-delay: 0.3s !important; }
+
       .stagger-7 { animation-delay: 0.35s !important; }
+
       .stagger-8 { animation-delay: 0.4s !important; }
 
       /* === Grid Background for Premium Sections === */
+
       .bg-grid-premium {
         background-image: 
           radial-gradient(circle at 1px 1px, var(--color-line) 1px, transparent 0);
@@ -492,9 +539,11 @@
       }
 
       /* === Stat Counter Glow === */
+
       .stat-glow {
         position: relative;
       }
+
       .stat-glow::before {
         content: '';
         position: absolute;
@@ -507,6 +556,8 @@
         pointer-events: none;
       }
     </style>
+
+  <link rel="stylesheet" href="/index.css">
     <script type="importmap">
 {
   "imports": {
@@ -517,7 +568,7 @@
   }
 }
 </script>
-  <!-- <link rel="stylesheet" href="/index.css"> -->
+  <script type="module" crossorigin src="/assets/index-NBjzEXtS.js"></script>
 </head>
   <body>
     <div id="root"></div>
@@ -525,6 +576,5 @@
       const savedTheme = localStorage.getItem('stockism-theme') || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
     </script>
-  <script type="module" src="/core/index.tsx"></script>
 </body>
 </html>
