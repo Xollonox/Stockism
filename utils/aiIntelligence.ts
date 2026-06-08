@@ -1,15 +1,15 @@
 // AI Intelligence Engine — powers auto-price fluctuation and news generation
-// Works with: Gemini API (cloud) OR Ollama (local Gemma 4 / any model)
-// Configure via AI_PROVIDER in .env
+// Supports:
+//   - Gemini API (cloud, free tier)
+//   - Ollama Cloud API (gemma4:31b-cloud, etc.)
+//   - Ollama Local (self-hosted)
 
-const AI_PROVIDER = (typeof window !== 'undefined' ? 
-  (import.meta as any).env?.VITE_AI_PROVIDER : 'gemini') || 'gemini';
-const AI_API_KEY = (typeof window !== 'undefined' ? 
-  (import.meta as any).env?.VITE_AI_API_KEY : '') || '';
-const OLLAMA_URL = (typeof window !== 'undefined' ?
-  (import.meta as any).env?.VITE_OLLAMA_URL : 'http://localhost:11434') || 'http://localhost:11434';
-const OLLAMA_MODEL = (typeof window !== 'undefined' ?
-  (import.meta as any).env?.VITE_OLLAMA_MODEL : 'gemma4:latest') || 'gemma4:latest';
+// ─── CONFIGURATION ──────────────────────────────────────
+// Set these in .env or hardcode for testing
+const AI_PROVIDER = 'ollama'; // 'gemini' | 'ollama'
+const AI_API_KEY = 'fb7ae1edc8844ad28f8066bb8dacd7bf.VdL_FtDEP8VCcCbHxSdnK0Ij';
+const OLLAMA_URL = 'https://api.ollama.com';
+const OLLAMA_MODEL = 'gemma4:31b-cloud';
 
 // ─── LOOKISM LORE DATABASE ───────────────────────────────
 // Hardcoded canon data to ground the AI
@@ -53,19 +53,31 @@ async function queryGemini(system: string, prompt: string): Promise<string> {
 }
 
 async function queryOllama(system: string, prompt: string): Promise<string> {
-  const res = await fetch(`${OLLAMA_URL}/api/generate`, {
+  // Ollama Cloud uses OpenAI-compatible chat endpoint
+  const res = await fetch(`${OLLAMA_URL}/v1/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AI_API_KEY}`,
+    },
     body: JSON.stringify({
       model: OLLAMA_MODEL,
-      system,
-      prompt,
-      stream: false,
-      options: { temperature: 0.7, num_predict: 1024 },
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 1024,
     }),
   });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Ollama API error ${res.status}: ${errText}`);
+  }
+
   const data = await res.json();
-  return data?.response || '';
+  return data?.choices?.[0]?.message?.content || '';
 }
 
 // ─── PRICE INTELLIGENCE ──────────────────────────────────
