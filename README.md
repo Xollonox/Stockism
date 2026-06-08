@@ -34,6 +34,18 @@
 | **Admin Panel** | Manage characters, users, news, and market events |
 | **Firebase Auth** | Email/password authentication with secure session handling |
 | **Dark & Neon Themes** | Immersive cyberpunk UI with theme persistence |
+| **🎞️ Cinematic Splash** | Animated boot sequence with typing effect |
+| **🃏 Character Modal** | Rich detail view with price chart, stats, and trade controls |
+| **🏆 Achievements** | 8 unlockable badges tracked across your journey |
+| **📋 Daily Missions** | 5 daily tasks with Phi rewards |
+| **🔔 Toast Notifications** | Live feedback for trades, votes, achievements |
+| **🔊 Sound Effects** | Premium Web Audio API synth sounds for all actions |
+| **💬 Interactive Tutorial** | 5-step guided onboarding for new agents |
+| **📊 Price Charts** | Inline SVG price history charts per character |
+| **📈 Live Ticker** | Scrolling market data ticker on dashboard |
+| **🐋 Whale Alerts** | Large trades highlighted in the live feed |
+| **✨ 3D Card Tilt** | Mouse-tracked perspective transform on character cards |
+| **🎨 Staggered Animations** | Cascading entrance animations across all views |
 
 ---
 
@@ -83,14 +95,24 @@ The app will be available at **http://localhost:3000**.
 ```
 Stockism/
 ├── components/
-│   ├── features/          # Feature components (Market, Trade, Admin, etc.)
-│   └── ui/                # Reusable UI primitives (Button, Input, Select)
+│   ├── features/          # Feature components (MarketCard, TradeModal, CharacterModal, etc.)
+│   ├── ui/                # Reusable UI primitives (Button, Input, Select)
+│   └── SplashScreen.tsx   # Cinematic boot sequence
 ├── core/
 │   ├── App.tsx            # Main application logic & routing
 │   ├── index.tsx          # Entry point
 │   └── types.ts           # TypeScript type definitions
 ├── services/
 │   └── firebase.ts        # Firebase client configuration & utilities
+├── hooks/
+│   └── useSound.ts        # Web Audio API synth sound effects
+├── utils/
+│   ├── achievements.ts    # Achievement definitions & check logic
+│   └── missions.ts        # Daily mission definitions & tracking
+├── public/
+│   └── favicon.svg        # Premium SVG favicon
+├── assets/
+│   └── banner.svg         # Custom SVG banner for README
 ├── constants.ts           # Game constants (crews, rarities, admin email)
 ├── index.html             # Vite entry HTML
 ├── package.json

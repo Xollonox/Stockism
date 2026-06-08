@@ -9,11 +9,12 @@ interface WaifuPanelProps {
   search: string;
   setSearch: (s: string) => void;
   onTrade: (c: Character) => void;
+  onCardClick?: (c: Character) => void;
   settings: GameSettings;
   frozenIds: string[];
 }
 
-export const WaifuPanel: React.FC<WaifuPanelProps> = React.memo(({ market, search, setSearch, onTrade, settings, frozenIds }) => {
+export const WaifuPanel: React.FC<WaifuPanelProps> = React.memo(({ market, search, setSearch, onTrade, onCardClick, settings, frozenIds }) => {
   const [sortBy, setSortBy] = useState("name");
 
   const filteredMarket = useMemo(() => {
@@ -74,7 +75,8 @@ export const WaifuPanel: React.FC<WaifuPanelProps> = React.memo(({ market, searc
           <MarketCard 
             key={char.id} 
             char={char} 
-            onTrade={onTrade} 
+            onTrade={onTrade}
+            onCardClick={onCardClick}
             isFrozen={frozenIds.includes(char.id)}
             tradingEnabled={tradingEnabled}
             multiplier={multiplier}

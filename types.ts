@@ -1,4 +1,3 @@
-
 import { Timestamp } from 'firebase/firestore';
 
 export interface UserProfile {
@@ -8,6 +7,9 @@ export interface UserProfile {
   updatedAt: Timestamp;
   isBanned?: boolean; 
   reputation?: number;
+  badges?: string[];
+  missions?: DailyMissionProgress[];
+  tutorialComplete?: boolean;
 }
 
 export interface UserPrivateData {
@@ -17,6 +19,7 @@ export interface UserPrivateData {
   isBanned?: boolean;
   role?: 'admin' | 'worker';
   bonusClaimed?: boolean;
+  tutorialComplete?: boolean;
 }
 
 export interface Character {
@@ -29,13 +32,18 @@ export interface Character {
   imageUrl?: string;
   updatedAt?: Timestamp;
   isWaifu?: boolean;
-  // Popularity System
   gender?: 'Male' | 'Female';
   popularityVotes?: number;
   prevPopularityRank?: number;
-  // Strongest System
   strengthVotes?: number;
   prevStrengthRank?: number;
+  allTimeHigh?: number;
+  holdersCount?: number;
+}
+
+export interface PricePoint {
+  time: number;
+  price: number;
 }
 
 export interface GameSettings {
@@ -49,12 +57,18 @@ export interface GameSettings {
   popularityVotingEnabled?: boolean;
   strongestVotingEnabled?: boolean;
   bannerImageUrl?: string;
-  event?: {
-    active: boolean;
-    name: string;
-    description: string;
-    priceMultiplier: number;
-  };
+  event?: GameEvent;
+}
+
+export interface GameEvent {
+  active: boolean;
+  name: string;
+  description: string;
+  priceMultiplier: number;
+  type?: 'crash' | 'spotlight' | 'crew_war' | 'mystery_box' | 'bonus';
+  endsAt?: Timestamp;
+  spotlightCharId?: string;
+  crewWarCrews?: string[];
 }
 
 export interface Trade {
@@ -69,10 +83,12 @@ export interface Trade {
   total: number;
   season: number;
   createdAt: Timestamp;
+  isWhale?: boolean;
 }
 
 export interface Holding {
   shares: number;
+  avgBuyPrice?: number;
 }
 
 export interface Announcement {
@@ -85,6 +101,57 @@ export interface Announcement {
   priceChange?: number;
   createdAt: Timestamp;
   createdBy: string;
+  priceImpact?: number;
+  expiresAt?: Timestamp;
 }
 
+// Achievement System
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  condition: (stats: AchievementStats) => boolean;
+}
 
+export interface AchievementStats {
+  tradesCount: number;
+  netWorth: number;
+  biggestTrade: number;
+  holdingsCount: number;
+  charactersHeld: number;
+  leaderboardRank: number | null;
+}
+
+// Daily Missions
+export interface DailyMission {
+  id: string;
+  title: string;
+  description: string;
+  reward: number;
+  icon: string;
+  type: 'trade' | 'networth' | 'vote' | 'visit' | 'profit';
+  target: number;
+}
+
+export interface DailyMissionProgress {
+  missionId: string;
+  progress: number;
+  completed: boolean;
+  claimed: boolean;
+  date: string;
+}
+
+// Toast Notifications
+export interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'achievement';
+  duration?: number;
+}
+
+// Price History
+export interface PriceHistory {
+  charId: string;
+  prices: { time: number; price: number }[];
+}

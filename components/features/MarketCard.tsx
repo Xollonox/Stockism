@@ -6,13 +6,14 @@ import { formatMoney } from '../../services/firebase';
 interface MarketCardProps {
   char: Character;
   onTrade: (char: Character) => void;
+  onCardClick?: (char: Character) => void;
   isFrozen: boolean;
   tradingEnabled: boolean;
   multiplier?: number;
   index?: number;
 }
 
-export const MarketCard = memo(({ char, onTrade, isFrozen, tradingEnabled, multiplier = 1, index = 0 }: MarketCardProps) => {
+export const MarketCard = memo(({ char, onTrade, onCardClick, isFrozen, tradingEnabled, multiplier = 1, index = 0 }: MarketCardProps) => {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [priceFlash, setPriceFlash] = useState<'up' | 'down' | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -144,7 +145,7 @@ export const MarketCard = memo(({ char, onTrade, isFrozen, tradingEnabled, multi
            <span className="text-white/20 tracking-widest font-bold">ARC_{char.id.substring(0,4).toUpperCase()}</span>
         </div>
 
-        <div className="relative aspect-[4/5] w-full bg-bg0 overflow-hidden">
+        <div className="relative aspect-[4/5] w-full bg-bg0 overflow-hidden cursor-pointer" onClick={() => onCardClick?.(char)}>
           {/* Centered Initial Letter Watermark */}
           <div className="absolute inset-0 flex items-center justify-center bg-zinc-900 z-0">
               <span className="text-8xl font-heading font-black text-white/[0.02] select-none transform -rotate-12 scale-150">{initial}</span>

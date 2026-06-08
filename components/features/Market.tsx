@@ -9,11 +9,12 @@ interface MarketProps {
   search: string;
   setSearch: (s: string) => void;
   onTrade: (c: Character) => void;
+  onCardClick?: (c: Character) => void;
   settings: GameSettings;
   frozenIds: string[];
 }
 
-export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSearch, onTrade, settings, frozenIds }) => {
+export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSearch, onTrade, onCardClick, settings, frozenIds }) => {
   const [crewFilter, setCrewFilter] = useState("All");
   const [sortBy, setSortBy] = useState("name");
 
@@ -100,7 +101,8 @@ export const Market: React.FC<MarketProps> = React.memo(({ market, search, setSe
             key={char.id} 
             char={char}
             index={i}
-            onTrade={onTrade} 
+            onTrade={onTrade}
+            onCardClick={onCardClick}
             isFrozen={frozenIds.includes(char.id)}
             tradingEnabled={tradingEnabled}
             multiplier={multiplier}
