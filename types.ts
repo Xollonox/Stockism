@@ -66,6 +66,39 @@ export interface GameSettings {
   event?: GameEvent;
 }
 
+// ─── POOL / BETTING SYSTEM ─────────────────────────
+export interface Pool {
+  id: string;
+  title: string;
+  description: string;
+  options: PoolOption[];
+  createdBy: string;
+  createdAt: any;
+  endsAt: any;
+  resolved: boolean;
+  winningOptionId?: string;
+  type: 'match' | 'event' | 'prediction';
+  minBet: number;
+  maxBet: number;
+  totalPool: number;
+}
+
+export interface PoolOption {
+  id: string;
+  label: string;
+  totalBet: number;
+  betCount: number;
+}
+
+export interface PoolBet {
+  uid: string;
+  username: string;
+  optionId: string;
+  amount: number;
+  createdAt: any;
+  claimed: boolean;
+}
+
 export interface GameEvent {
   active: boolean;
   name: string;

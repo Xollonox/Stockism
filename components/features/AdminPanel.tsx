@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Input, Select } from '../ui/Input';
 import { GameSettings, Character } from '../../types';
 import { CREWS, RARITIES, ADMIN_EMAIL } from '../../constants';
+import { PoolCreator } from './PoolCreator';
 
 interface AdminPanelProps {
   settings: GameSettings;
@@ -13,7 +14,7 @@ interface AdminPanelProps {
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMainAdmin }) => {
-  const [activeTab, setActiveTab] = useState<'GENERAL' | 'MARKET' | 'USERS' | 'NEWS' | 'EVENTS'>('GENERAL');
+  const [activeTab, setActiveTab] = useState<'GENERAL' | 'MARKET' | 'USERS' | 'NEWS' | 'EVENTS' | 'POOLS'>('GENERAL');
   
   const placeholder = "/assets/placeholder-character.png";
 
@@ -286,7 +287,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMain
     <div className="space-y-6">
       {/* Premium Slanted Console Tabs */}
       <div className="flex gap-2 p-1.5 glass-panel rounded-md overflow-x-auto border border-line">
-        {['GENERAL', 'MARKET', 'USERS', 'NEWS', 'EVENTS'].map((tab) => {
+        {['GENERAL', 'MARKET', 'USERS', 'NEWS', 'EVENTS', 'POOLS'].map((tab) => {
           const isActive = activeTab === tab;
           return (
             <button
@@ -513,6 +514,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ settings, market, isMain
         </div>
       )}
 
+      {activeTab === 'POOLS' && (
+        <PoolCreator />
+      )}
 
     </div>
   );

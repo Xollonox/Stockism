@@ -42,6 +42,7 @@ import { checkLoginStreak, MYSTERY_BOXES } from '../utils/gamification';
 import { MobileNav } from '../components/features/MobileNav';
 import { MysteryBoxShop } from '../components/features/MysteryBoxShop';
 import { AdminTools } from '../components/features/AdminTools';
+import { PoolsView } from '../components/features/PoolsView';
 import { usePullToRefresh, haptic } from '../hooks/usePullToRefresh';
 import { startMarketAgent, stopMarketAgent, triggerAICycle } from '../utils/marketAgent';
 import { createConfetti } from '../utils/confetti';
@@ -889,6 +890,7 @@ function AppContent() {
         {view === 'market' && <Market market={market} search={search} setSearch={handleSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} recentSearches={recentSearches} onClearRecentSearches={() => { clearRecentSearches(); setRecentSearchesState([]); }} />}
         {view === 'waifu' && <WaifuPanel market={market} search={search} setSearch={handleSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} />}
         {view === 'news' && <div className="max-w-3xl mx-auto space-y-4">{news.map(n => <NewsCard key={n.id} item={n} onJumpToMarket={c => { setSearch(c); setView('market'); }} />)}</div>}
+      {view === 'pools' && <PoolsView uid={user?.uid} username={username} cash={cash} />}
         
         {view === 'trades' && (
           <div className="space-y-6 animate-fade-in-up">

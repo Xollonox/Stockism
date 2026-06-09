@@ -80,6 +80,45 @@ async function queryOllama(system: string, prompt: string): Promise<string> {
   return data?.choices?.[0]?.message?.content || '';
 }
 
+// ─── REDDIT & WIKI FETCHER ──────────────────────────────
+// Fetches latest Lookism discussions to inform AI decisions
+async function fetchRedditPosts(): Promise<string> {
+  try {
+    // Try Reddit JSON API (no auth needed)
+    const res = await fetch('https://www.reddit.com/r/lookismcomic/hot.json?limit=10', {
+      headers: { 'User-Agent': 'StockismAI/1.0' },
+    });
+    if (!res.ok) return '';
+    const data = await res.json();
+    return data.data.children.map((c: any) =>
+      `- ${c.data.title} (${c.data.ups} upvotes, ${c.data.num_comments} comments)`
+    ).join('\n');
+  } catch { return ''; }
+}
+
+async function fetchLookismWiki(): Promise<string> {
+  try {
+    // Fandom API for Lookism wiki — recent changes
+    const res = await fetch(
+      'https://lookism.fandom.com/api/v1/Articles/Top?limit=10&namespaces=0',
+      { headers: { 'User-Agent': 'StockismAI/1.0' } }
+    );
+    if (!res.ok) return '';
+    const data = await res.json();
+    return (data.items || []).map((item: any) =>
+      `- ${item.title} (recently updated)`
+    ).join('\n');
+  } catch { return ''; }
+}
+
+export async function fetchMarketContext(): Promise<string> {
+  const [reddit, wiki] = await Promise.all([fetchRedditPosts(), fetchLookismWiki()]);
+  let ctx = '';
+  if (reddit) ctx += `\n=== LATEST REDDIT DISCUSSIONS ===\n${reddit}\n`;
+  if (wiki) ctx += `\n=== RECENT WIKI UPDATES ===\n${wiki}\n`;
+  return ctx;
+}
+
 // ─── PRICE INTELLIGENCE ──────────────────────────────────
 export interface PriceSuggestion {
   charId: string;
@@ -121,7 +160,8 @@ OUTPUT FORMAT:
     `- ${c.name} (ID: ${c.id}) | Crew: ${c.crew} | Rarity: ${c.rarity} | Current Price: Φ${c.price} | Tier: ${c.tier}`
   ).join('\n');
 
-  const prompt = `Current market state:\n${charSummaries}\n\nTop tier characters: ${LOOKISM_CANON.topTiers.join(', ')}\n\nAnalyze and suggest price changes based on Lookism lore. Return valid JSON only.`;
+  const marketContext = await fetchMarketContext();
+  const prompt = `Current market state:\n${charSummaries}\n\nTop tier characters: ${LOOKISM_CANON.topTiers.join(', ')}\n\n${marketContext}\n\nAnalyze and suggest price changes based on Lookism lore, recent Reddit discussions, and wiki updates. Return valid JSON only.`;
 
   try {
     const raw = await queryAI(systemPrompt, prompt);

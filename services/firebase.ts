@@ -28,7 +28,10 @@ export const slugify = (name: string) => {
     .slice(0, 50);
 };
 
-export const formatMoney = (n: number) => Math.round(Number(n || 0)).toLocaleString("en-IN");
+export const formatMoney = (n: number, decimals = 2) => {
+  const val = Number(n || 0);
+  return val.toLocaleString("en-IN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+};
 
 export const formatTime = (ts: any) => {
   try {
