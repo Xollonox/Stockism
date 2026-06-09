@@ -38,23 +38,24 @@ export const PoolCard: React.FC<PoolCardProps> = ({ pool, uid, username, cash = 
     setLoading(true);
     try {
       await runTransaction(db, async (txn) => {
+        // ALL reads FIRST
         const userRef = doc(db, 'users', uid);
         const userSnap = await txn.get(userRef);
         if (!userSnap.exists()) throw new Error('User not found');
         const userCash = userSnap.data().cash || 0;
         if (userCash < amount) throw new Error('Insufficient funds');
 
-        txn.update(userRef, { cash: userCash - amount });
-
-        // Add bet record
-        const betRef = doc(collection(db, 'pools', pool.id, 'bets'));
-        txn.set(betRef, { uid, username, optionId: selectedOption, amount, createdAt: serverTimestamp(), claimed: false });
-
-        // Update pool option totals
         const poolRef = doc(db, 'pools', pool.id);
         const poolSnap = await txn.get(poolRef);
         if (!poolSnap.exists()) throw new Error('Pool not found');
         const poolData = poolSnap.data() as Pool;
+
+        // ALL writes after all reads
+        txn.update(userRef, { cash: userCash - amount });
+
+        const betRef = doc(collection(db, 'pools', pool.id, 'bets'));
+        txn.set(betRef, { uid, username, optionId: selectedOption, amount, createdAt: serverTimestamp(), claimed: false });
+
         const updatedOptions = poolData.options.map(o =>
           o.id === selectedOption ? { ...o, totalBet: o.totalBet + amount, betCount: o.betCount + 1 } : o
         );
