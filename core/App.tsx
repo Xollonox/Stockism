@@ -43,6 +43,8 @@ import { MobileNav } from '../components/features/MobileNav';
 import { MysteryBoxShop } from '../components/features/MysteryBoxShop';
 import { AdminTools } from '../components/features/AdminTools';
 import { PoolsView } from '../components/features/PoolsView';
+import { ChatRoom } from '../components/features/ChatRoom';
+import { PoolCard } from '../components/features/PoolCard';
 import { usePullToRefresh, haptic } from '../hooks/usePullToRefresh';
 import { startMarketAgent, stopMarketAgent, triggerAICycle } from '../utils/marketAgent';
 import { createConfetti } from '../utils/confetti';
@@ -481,7 +483,8 @@ function AppContent() {
         txn.update(userRef, { cash: currentCash + totalCost });
         txn.set(holdingRef, { shares: currentShares - qty }, { merge: true });
       }
-      const tradeRef = doc(collection(db, 'trades'));
+      const tradeId = `${user.uid}_${Date.now()}`;
+      const tradeRef = doc(db, 'trades', tradeId);
       const isWhale = totalCost >= 100000;
       txn.set(tradeRef, {
         uid: user.uid, username, charId, character: charData.name, crew: charData.crew,
@@ -517,7 +520,8 @@ function AppContent() {
         if (voteDoc.exists()) throw new Error("Daily voting quota reached");
         const cDoc = await txn.get(charRef);
         txn.update(charRef, { popularityVotes: (cDoc.data()?.popularityVotes || 0) + 1 });
-        txn.set(voteRef, { uid: user.uid, charId, gender: charGender, timestamp: serverTimestamp() });
+        const popVoteId = `${user.uid}_${Date.now()}`;
+        txn.set(doc(db, 'daily_votes', popVoteId), { uid: user.uid, charId, gender: charGender, timestamp: serverTimestamp() });
       });
       sounds.success();
       addToast({ message: "Vote registered successfully", type: 'success' });
@@ -541,7 +545,8 @@ function AppContent() {
         if (voteDoc.exists()) throw new Error("Already cast power vote today.");
         const cDoc = await txn.get(charRef);
         txn.update(charRef, { strengthVotes: (cDoc.data()?.strengthVotes || 0) + 1 });
-        txn.set(voteRef, { uid: user.uid, charId, type: 'strength', timestamp: serverTimestamp() });
+        const strVoteId = `${user.uid}_${Date.now()}`;
+        txn.set(doc(db, 'daily_votes', strVoteId), { uid: user.uid, charId, type: 'strength', timestamp: serverTimestamp() });
       });
       sounds.success();
       addToast({ message: "Power vote registered.", type: 'success' });
@@ -887,11 +892,17 @@ function AppContent() {
           );
         })()}
 
+        {view === 'pools' && <PoolsView uid={user?.uid} username={username} cash={cash} />}
+        {view === 'chat' && (
+          <div className="animate-fade-in-up">
+            <ChatRoom uid={user?.uid} username={username} />
+          </div>
+        )}
+
         {view === 'market' && <Market market={market} search={search} setSearch={handleSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} recentSearches={recentSearches} onClearRecentSearches={() => { clearRecentSearches(); setRecentSearchesState([]); }} />}
         {view === 'waifu' && <WaifuPanel market={market} search={search} setSearch={handleSearch} onTrade={user ? setTradeChar : () => setShowAuthModal(true)} onCardClick={handleCardClick} settings={settings} frozenIds={frozenIds} />}
         {view === 'news' && <div className="max-w-3xl mx-auto space-y-4">{news.map(n => <NewsCard key={n.id} item={n} onJumpToMarket={c => { setSearch(c); setView('market'); }} />)}</div>}
-      {view === 'pools' && <PoolsView uid={user?.uid} username={username} cash={cash} />}
-        
+
         {view === 'trades' && (
           <div className="space-y-6 animate-fade-in-up">
             <div className="glass-panel p-6 flex justify-between items-center">

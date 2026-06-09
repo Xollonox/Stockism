@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { view: 'leaderboard', icon: 'LB', label: 'Rank' },
   { view: 'profile', icon: 'ID', label: 'Profile', requiresAuth: true },
   { view: 'pools', icon: '🎯', label: 'Pools' },
+  { view: 'chat', icon: '💬', label: 'Chat' },
 ];
 
 export const MobileNav: React.FC<MobileNavProps> = ({ activeView, setView, isAdmin, isGuest }) => {

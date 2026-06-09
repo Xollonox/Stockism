@@ -64,6 +64,13 @@ service cloud.firestore {
       allow write: if isSignedIn() && request.resource.data.uid == request.auth.uid;
     }
     
+    // 10. Chat - Read All, Signed-In Create
+    match /chat/{messageId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
     match /pools/{poolId} {
       allow read: if true;
       allow create: if isAdmin() || isWorker();

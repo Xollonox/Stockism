@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { doc, updateDoc, increment, addDoc, collection, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { doc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { db, formatMoney } from '../../services/firebase';
 import { Button } from '../ui/Button';
 import { useToast } from './Toast';
@@ -53,7 +53,9 @@ export const PoolCard: React.FC<PoolCardProps> = ({ pool, uid, username, cash = 
         // ALL writes after all reads
         txn.update(userRef, { cash: userCash - amount });
 
-        const betRef = doc(collection(db, 'pools', pool.id, 'bets'));
+        // Use deterministic ID to avoid auto-generation issues in transactions
+        const betId = `${uid}_${Date.now()}`;
+        const betRef = doc(db, 'pools', pool.id, 'bets', betId);
         txn.set(betRef, { uid, username, optionId: selectedOption, amount, createdAt: serverTimestamp(), claimed: false });
 
         const updatedOptions = poolData.options.map(o =>

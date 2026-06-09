@@ -206,7 +206,12 @@ export const Layout: React.FC<LayoutProps> = ({
                 <NavItem view="waifu" label="Waifu Index" icon="WF" />
              </nav>
 
-             <div className="px-8 text-[9px] font-black text-muted/40 uppercase tracking-[0.2em] mb-4">Global Data</div>
+             <div className="px-8 text-[9px] font-black text-muted/40 uppercase tracking-[0.2em] mb-4">Community</div>
+             <nav className="px-2">
+                <NavItem view="pools" label="Prediction Pools" icon="🎯" />
+                <NavItem view="chat" label="General Chat" icon="💬" />
+             </nav>
+             <div className="px-8 text-[9px] font-black text-muted/40 uppercase tracking-[0.2em] mt-4 mb-4">Rankings</div>
              <nav className="px-2">
                 <NavItem view="popularity" label="Popularity" icon="PV" />
                 <NavItem view="strongest" label="Power Rankings" icon="PR" />
