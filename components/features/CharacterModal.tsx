@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '../ui/Button';
 import { formatMoney } from '../../services/firebase';
-import { PriceChart } from './PriceChart';
+import { CandlestickChart, pricesToCandles } from './PriceChart';
 
 interface CharacterModalProps {
   char: any;
@@ -123,7 +123,7 @@ export const CharacterModal: React.FC<CharacterModalProps> = ({ char, onClose, o
             {/* Tab Content */}
             {activeTab === 'chart' ? (
               <div className="p-4 bg-black/20 border border-line rounded-sm">
-                <PriceChart prices={mockHistory} width={280} height={100} />
+                <CandlestickChart data={pricesToCandles(mockHistory)} width={280} height={100} />
                 <div className="flex justify-between text-[8px] font-mono text-muted/50 mt-2">
                   <span>24h ago</span>
                   <span>Now</span>

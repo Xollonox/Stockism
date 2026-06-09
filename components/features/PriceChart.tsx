@@ -1,67 +1,136 @@
 import React from 'react';
 
-interface PriceChartProps {
-  prices: { time: number; price: number }[];
-  width?: number;
-  height?: number;
-  color?: string;
+interface Candle {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
 }
 
-export const PriceChart: React.FC<PriceChartProps> = ({ prices, width = 280, height = 100, color = '#E11D48' }) => {
-  if (!prices || prices.length < 2) {
+interface CandlestickChartProps {
+  data: Candle[];
+  width?: number;
+  height?: number;
+}
+
+export const CandlestickChart: React.FC<CandlestickChartProps> = ({ data, width = 340, height = 180 }) => {
+  if (!data || data.length < 2) {
     return (
       <div className="flex items-center justify-center text-muted/40 font-mono text-[10px]" style={{ width, height }}>
-        Insufficient data
+        Not enough data
       </div>
     );
   }
 
-  const vals = prices.map(p => p.price);
-  const min = Math.min(...vals);
-  const max = Math.max(...vals);
+  const padding = { top: 20, right: 20, bottom: 25, left: 10 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const allPrices = data.flatMap(d => [d.high, d.low]);
+  const min = Math.min(...allPrices);
+  const max = Math.max(...allPrices);
   const range = max - min || 1;
-  const isUp = vals[vals.length - 1] >= vals[0];
 
-  const points = prices.map((p, i) => {
-    const x = (i / (prices.length - 1)) * width;
-    const y = height - ((p.price - min) / range) * (height - 20) - 10;
-    return `${x},${y}`;
-  }).join(' ');
+  const toX = (i: number) => padding.left + (i / (data.length - 1)) * chartW;
+  const toY = (price: number) => padding.top + chartH - ((price - min) / range) * chartH;
 
-  const fillPoints = `0,${height} ${points} ${width},${height}`;
+  // Volume bar height
+  const maxVol = Math.max(...data.map(d => d.volume || 0), 1);
+  const volHeight = 20;
 
   return (
     <svg width={width} height={height} className="overflow-visible">
-      {/* Gradient */}
       <defs>
-        <linearGradient id={`chart-grad-${color}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+        <linearGradient id="candle-bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10B981" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="candle-bg-red" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#EF4444" stopOpacity="0" />
+          <stop offset="100%" stopColor="#EF4444" stopOpacity="0.08" />
         </linearGradient>
       </defs>
-      
-      {/* Fill area */}
-      <polygon points={fillPoints} fill={`url(#chart-grad-${color})`} />
-      
-      {/* Line */}
-      <polyline
-        points={points}
-        fill="none"
-        stroke={isUp ? '#10B981' : '#EF4444'}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="drop-shadow-[0_0_4px_rgba(16,185,129,0.3)]"
-      />
-      
-      {/* End dot */}
-      <circle
-        cx={width}
-        cy={vals[vals.length - 1] === max ? 10 : height - ((vals[vals.length - 1] - min) / range) * (height - 20) - 10}
-        r="2.5"
-        fill={isUp ? '#10B981' : '#EF4444'}
-        className="drop-shadow-[0_0_6px_rgba(16,185,129,0.5)]"
-      />
+
+      {/* Grid lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map(pct => {
+        const y = padding.top + chartH * (1 - pct);
+        return (
+          <g key={pct}>
+            <line x1={padding.left} y1={y} x2={width - padding.right} y2={y} stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+            <text x={padding.left - 4} y={y + 3} textAnchor="end" fill="rgba(255,255,255,0.15)" fontSize="8" fontFamily="monospace">
+              {Math.round(min + range * pct)}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Candles */}
+      {data.map((d, i) => {
+        const x = toX(i) - 3;
+        const candleWidth = Math.max(3, chartW / data.length * 0.6);
+        const isUp = d.close >= d.open;
+        const color = isUp ? '#10B981' : '#EF4444';
+        const alpha = isUp ? '0.7' : '0.7';
+
+        return (
+          <g key={i}>
+            {/* Wick */}
+            <line x1={toX(i)} y1={toY(d.high)} x2={toX(i)} y2={toY(d.low)} stroke={color} strokeWidth="1" opacity={alpha} />
+            {/* Body */}
+            <rect
+              x={toX(i) - candleWidth / 2}
+              y={toY(Math.max(d.open, d.close))}
+              width={candleWidth}
+              height={Math.max(1, Math.abs(toY(d.open) - toY(d.close)))}
+              fill={color}
+              opacity={alpha}
+              rx="1"
+            />
+            {/* Volume bar */}
+            {d.volume && (
+              <rect
+                x={toX(i) - candleWidth / 2}
+                y={height - volHeight * (d.volume / maxVol)}
+                width={candleWidth}
+                height={volHeight * (d.volume / maxVol)}
+                fill={isUp ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)'}
+                rx="1"
+              />
+            )}
+          </g>
+        );
+      })}
+
+      {/* Last price label */}
+      {data.length > 0 && (
+        <text x={width - padding.right} y={padding.top - 4} textAnchor="end" fill="#E11D48" fontSize="10" fontFamily="monospace" fontWeight="bold">
+          Φ{Math.round(data[data.length - 1].close).toLocaleString()}
+        </text>
+      )}
     </svg>
   );
 };
+
+// Helper to create candles from price history
+export function pricesToCandles(prices: { time: number; price: number }[]): Candle[] {
+  if (!prices || prices.length < 2) return [];
+  
+  // Group into hourly candles
+  const groups: Record<number, number[]> = {};
+  for (const p of prices) {
+    const hour = Math.floor(p.time / 3600000) * 3600000;
+    if (!groups[hour]) groups[hour] = [];
+    groups[hour].push(p.price);
+  }
+
+  return Object.entries(groups).map(([time, prices]) => ({
+    time: parseInt(time),
+    open: prices[0],
+    high: Math.max(...prices),
+    low: Math.min(...prices),
+    close: prices[prices.length - 1],
+    volume: prices.length * 1000,
+  }));
+}

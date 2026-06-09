@@ -15,7 +15,7 @@ const firebaseConfig = {
 };
 
 // Initialize via named export (standard modular SDK pattern)
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const auth = Auth.getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
